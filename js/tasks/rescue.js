@@ -181,7 +181,8 @@ RS.taskGames.rescue = (function () {
       success: true,
       points: cfg.points,
       lines: ['💚 成功救助' + animal.name + ' · +' + cfg.points + ' 分', '三个步骤全部做对'],
-      message: '救助成功！' + animal.name + '绕着你转了一圈，开心地游走了。'
+      message: '救助成功！' + animal.name + '绕着你转了一圈，开心地游走了。',
+      collect: { animal: animal.id, firstTime: RS.state.animalSaved(animal.id) === 0 }
     };
     g.step = 4;
     stop();

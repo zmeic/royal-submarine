@@ -26,7 +26,11 @@ RS.submarine = (function () {
   }
 
   function viewBody() {
-    return '<p class="room__note">窗外有小鱼慢慢游过，运气好还能看到金色的稀有鱼。</p>';
+    var stats = RS.state.stats();
+    return '<p class="room__note">窗外有小鱼慢慢游过，运气好还能看到金色的稀有鱼。</p>' +
+      '<p class="room__note">图鉴上已经收录 <strong>' + stats.fishKinds + ' / ' +
+        cfg.species.length + '</strong> 种鱼。</p>' +
+      '<button class="btn btn--primary btn--xl" type="button" data-room-action="dex">📖 打开图鉴</button>';
   }
 
   function diningBody() {
@@ -120,6 +124,7 @@ RS.submarine = (function () {
   function handleAction(action, btn) {
     if (action === 'tasks') { RS.tasks.openSelect(); return; }
     if (action === 'shop') { RS.shop.open(); return; }
+    if (action === 'dex') { RS.collection.open(); return; }
 
     if (action === 'eat') {
       if (!RS.state.has('food')) {

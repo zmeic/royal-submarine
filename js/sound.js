@@ -153,6 +153,13 @@ RS.sound = (function () {
     step: function () {
       tone({ type: 'sine', freq: 620, toFreq: 820, dur: 0.12, vol: 0.34 });
     },
+    /* 拿到成就徽章：亮晶晶的小号声 */
+    badge: function () {
+      [659, 784, 988, 1319].forEach(function (f, i) {
+        tone({ type: 'triangle', freq: f, dur: 0.3, vol: 0.42, delay: i * 0.1 });
+      });
+      tone({ type: 'sine', freq: 1568, dur: 0.5, vol: 0.22, delay: 0.42 });
+    },
     /* 泡泡（洗手、观景） */
     bubble: function () {
       for (var i = 0; i < 3; i++) {

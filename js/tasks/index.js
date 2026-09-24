@@ -124,6 +124,8 @@ RS.tasks = (function () {
       }
     }
 
+    lines = lines.concat(recordCollection(result));
+
     var broken = checkBreakage(t.usesGear || []);
     broken.forEach(function (b) { lines.push('🔧 ' + b.name + b.why + '，回便利店换个新的就好'); });
 
@@ -133,6 +135,28 @@ RS.tasks = (function () {
     stopCurrent();
     rollDistances();
     showResult(t, result, total, lines, broken);
+  }
+
+  /* 把这次任务的收获写进图鉴，并返回要显示在结算里的额外说明 */
+  function recordCollection(result) {
+    var c = result.collect;
+    var extra = [];
+    if (!result.success || !c) { return extra; }
+
+    if (c.fish) {
+      /* 捕鱼：新鱼种的提示已经由捕鱼任务自己写好了 */
+      RS.state.recordFish(c.fish, c.catchTotal || 0);
+    }
+    if (c.animal) {
+      RS.state.recordAnimal(c.animal);
+      if (c.firstTime) {
+        var animal = null;
+        cfg.tasks.rescue.animals.forEach(function (a) { if (a.id === c.animal) { animal = a; } });
+        if (animal) { extra.push('📖 图鉴收录新朋友：' + animal.name + '！'); }
+      }
+    }
+    if (c.treasure) { RS.state.recordTreasure(); }
+    return extra;
   }
 
   function checkBreakage(gearIds) {
@@ -185,6 +209,9 @@ RS.tasks = (function () {
       RS.sound.play('soft');
       ui.toast('没关系，不扣分，再来一次！', 'warn', 2400);
     }
+
+    /* 积分和图鉴都写完了，这时候再看有没有解锁新徽章 */
+    RS.achievements.check();
 
     broken.forEach(function (b, i) {
       window.setTimeout(function () {

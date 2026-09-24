@@ -28,6 +28,9 @@ RS.art = (function () {
     // rareFish:   'assets/fish-rare.png',
     // chest:      'assets/chest.png',
     // turtle:     'assets/turtle.png',
+
+    /* 图鉴里的每一种鱼也能单独换：id 是 'fish-' 加上 js/config.js 里的种类 id
+       例：  'fish-clown': 'assets/fish-clown.png',   ← 孩子画的小丑鱼 */
   };
 
   /* ------------------------------------------------------------
@@ -42,6 +45,7 @@ RS.art = (function () {
     { id: 'crew',      name: '船员',               size: '400×400',  where: '抽身份、舞台' },
     { id: 'fish',      name: '普通鱼',             size: '300×200',  where: '捕鱼任务、观景区' },
     { id: 'rareFish',  name: '稀有鱼（金色）',      size: '300×200',  where: '捕鱼任务' },
+    { id: 'fish-*',    name: '图鉴里的每种鱼（可选）', size: '300×200', where: '捕鱼任务、图鉴，见 assets/README.md' },
     { id: 'chest',     name: '宝箱',               size: '300×300',  where: '寻宝任务' },
     { id: 'turtle',    name: '小海龟',             size: '300×300',  where: '救援任务' },
     { id: 'whale',     name: '小鲸鱼',             size: '300×300',  where: '救援任务' },

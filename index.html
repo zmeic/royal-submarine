@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="css/screens.css" />
 <link rel="stylesheet" href="css/submarine.css" />
 <link rel="stylesheet" href="css/tasks.css" />
+<link rel="stylesheet" href="css/collection.css" />
 </head>
 <body>
 
@@ -52,6 +53,7 @@
     </div>
   </div>
   <div class="hud__actions">
+    <button class="btn btn--ghost btn--sm" type="button" id="btnHudDex">📖 图鉴</button>
     <button class="btn btn--ghost btn--sm" type="button" id="btnHudShop">🛒 便利店</button>
     <button class="btn btn--ghost btn--sm sound-btn" type="button" data-sound-toggle aria-pressed="true">🔊 声音开</button>
     <button class="btn btn--ghost btn--sm" type="button" id="btnHudRestart">重新开始</button>
@@ -121,6 +123,7 @@
       <div class="main__entries">
         <button class="btn btn--primary btn--xl btn--wide" type="button" id="btnGoTasks">🐟 出发做任务</button>
         <button class="btn btn--gold btn--xl btn--wide" type="button" id="btnGoShop">🛒 进入便利店</button>
+        <button class="btn btn--ghost btn--xl btn--wide" type="button" id="btnGoDex">📖 打开图鉴</button>
       </div>
     </div>
   </section>
@@ -159,6 +162,7 @@
       <div class="row row--center">
         <button class="btn btn--primary btn--xl" type="button" id="btnResultAgain">再做一个任务</button>
         <button class="btn btn--gold btn--lg" type="button" id="btnResultShop">去便利店</button>
+        <button class="btn btn--ghost btn--lg" type="button" id="btnResultDex">📖 看图鉴</button>
         <button class="btn btn--ghost btn--lg" type="button" data-goto="screen-main">回到潜艇</button>
       </div>
     </div>
@@ -181,6 +185,25 @@
     </div>
   </section>
 
+  <!-- 9. 图鉴 -->
+  <section class="screen screen--dex" id="screen-collection" aria-labelledby="dexTitle">
+    <div class="panel panel--wide">
+      <h2 class="panel__title" id="dexTitle">📖 海底图鉴</h2>
+      <div class="dex-summary" id="dexSummary"></div>
+      <div class="dex-tabs" id="dexTabs" role="tablist">
+        <button class="dex-tab is-active" type="button" role="tab" aria-selected="true" data-dex-tab="fish">🐟 鱼类</button>
+        <button class="dex-tab" type="button" role="tab" aria-selected="false" data-dex-tab="animals">🐢 海洋朋友</button>
+        <button class="dex-tab" type="button" role="tab" aria-selected="false" data-dex-tab="badges">🏅 成就</button>
+      </div>
+      <p class="panel__hint" id="dexHint"></p>
+      <div class="dex-grid" id="dexGrid"></div>
+      <div class="row row--center">
+        <button class="btn btn--ghost btn--lg" type="button" data-goto="screen-main">← 回到潜艇</button>
+        <button class="btn btn--primary btn--lg" type="button" id="btnDexToTasks">继续做任务 →</button>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- 浮动提示 -->
@@ -198,6 +221,9 @@
   </div>
 </div>
 
+<!-- 新徽章弹卡 -->
+<div class="badge-wrap" id="badgeWrap" aria-live="polite"></div>
+
 <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
 
 <script src="js/config.js"></script>
@@ -207,6 +233,8 @@
 <script src="js/storage.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/collection.js"></script>
 <script src="js/submarine.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/tasks/fishing.js"></script>
