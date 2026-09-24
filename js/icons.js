@@ -18,7 +18,10 @@ RS.icons = (function () {
       'xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" focusable="false">' + inner + '</svg>';
   }
 
-  var head = '<circle cx="24" cy="17" r="8" fill="#ffd9b0"/>' +
+  /* 手绘感：统一的暖棕色描边，模仿铅笔线 */
+  var LINE = '#6b503a';
+
+  var head = '<circle cx="24" cy="17" r="8" fill="#ffd9b0" stroke="' + LINE + '" stroke-width="1.6"/>' +
     '<circle cx="21" cy="16" r="1.4" fill="#2b2b2b"/><circle cx="27" cy="16" r="1.4" fill="#2b2b2b"/>' +
     '<path d="M21 21q3 2.5 6 0" stroke="#c9704f" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
 
@@ -71,26 +74,27 @@ RS.icons = (function () {
 
     /* ---- 任务相关 ---- */
     fish:
-      '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="#4ec3f0"/>' +
-      '<path d="M5 24q7 5 15 6-5 5-15 4z" fill="#3aafe0"/>' +
-      '<path d="M43 24l-9-7v14z" fill="#2aa4d4"/>' +
-      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="#7fd8f7"/>' +
-      '<circle cx="17" cy="21" r="2.8" fill="#fff"/><circle cx="17.6" cy="21" r="1.4" fill="#123"/>' +
-      '<path d="M23 13q5 4 1 9" stroke="#2aa4d4" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
+      '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="#6ed0f0" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M43 24l-9-7v14z" fill="#4bb8dd" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="#a8e6fb" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<circle cx="17" cy="21" r="3" fill="#fff" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<circle cx="17.6" cy="21" r="1.4" fill="#2b2b2b"/>' +
+      '<path d="M22 14q5 4 1 9" stroke="' + LINE + '" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+      '<path d="M13 27q4 2 8 1" stroke="' + LINE + '" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".55"/>',
     rareFish:
-      '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="#ffd45e"/>' +
-      '<path d="M5 24q7 5 15 6-5 5-15 4z" fill="#f7b937"/>' +
-      '<path d="M43 24l-9-7v14z" fill="#f2a33c"/>' +
-      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="#fff3c4"/>' +
-      '<circle cx="17" cy="21" r="3" fill="#fff"/><circle cx="17.6" cy="21" r="1.5" fill="#123"/>' +
-      '<path d="M27 12l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4z" fill="#fffbe8"/>' +
-      '<path d="M11 29q9 5 20 1" stroke="#f2a33c" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
+      '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="#ffd971" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M43 24l-9-7v14z" fill="#f5b53c" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="#fff3c4" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<circle cx="17" cy="21" r="3.2" fill="#fff" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<circle cx="17.6" cy="21" r="1.5" fill="#2b2b2b"/>' +
+      '<path d="M28 11l2.6 5.4 5.4 2.6-5.4 2.6-2.6 5.4-2.6-5.4-5.4-2.6 5.4-2.6z" fill="#fffbe8" stroke="' + LINE + '" stroke-width="1.2"/>' +
+      '<path d="M11 29q9 5 20 1" stroke="' + LINE + '" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".6"/>',
     chest:
-      '<rect x="8" y="22" width="32" height="18" rx="3" fill="#b07a3c"/>' +
-      '<path d="M8 22q16-12 32 0z" fill="#d79a4e"/>' +
-      '<rect x="8" y="27" width="32" height="4" fill="#ffc34d"/>' +
-      '<rect x="21" y="25" width="6" height="8" rx="2" fill="#ffe9a8"/>' +
-      '<circle cx="24" cy="29" r="1.6" fill="#8d5d29"/>',
+      '<rect x="7" y="22" width="34" height="19" rx="4" fill="#c98d47" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<path d="M7 22q17-13 34 0z" fill="#e0a95e" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<rect x="7" y="26" width="34" height="5" fill="#ffd166" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<rect x="20" y="25" width="8" height="10" rx="3" fill="#ffe9a8" stroke="' + LINE + '" stroke-width="1.6"/>' +
+      '<circle cx="24" cy="30" r="1.8" fill="' + LINE + '"/>',
     turtle:
       '<ellipse cx="24" cy="26" rx="14" ry="11" fill="#3ddc97"/>' +
       '<path d="M24 15v22M13 22h22M13 30h22" stroke="#22a273" stroke-width="2"/>' +
@@ -177,7 +181,39 @@ RS.icons = (function () {
       '<path d="M24 6l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fffbe8"/>',
     wave:
       '<path d="M2 28q8-8 16 0t16 0 12-4" stroke="#7fd8f7" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-      '<path d="M2 38q8-8 16 0t16 0 12-4" stroke="#cfefff" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      '<path d="M2 38q8-8 16 0t16 0 12-4" stroke="#cfefff" stroke-width="4" fill="none" stroke-linecap="round"/>',
+
+    /* 皇冠：原画里最重要的识别元素 */
+    crown:
+      '<path d="M8 34 L6 14 l9 7 9-13 9 13 9-7 -2 20z" fill="#ffd45e" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<rect x="8" y="34" width="32" height="7" rx="3" fill="#f2b33c" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<circle cx="6" cy="13" r="3.2" fill="#fff0b8" stroke="' + LINE + '" stroke-width="1.6"/>' +
+      '<circle cx="24" cy="7" r="3.6" fill="#fff0b8" stroke="' + LINE + '" stroke-width="1.6"/>' +
+      '<circle cx="42" cy="13" r="3.2" fill="#fff0b8" stroke="' + LINE + '" stroke-width="1.6"/>' +
+      '<path d="M24 24l3.4 4-3.4 4-3.4-4z" fill="#8fd6f5" stroke="' + LINE + '" stroke-width="1.4"/>',
+
+    /* 休息区：小床 */
+    bed:
+      '<rect x="5" y="20" width="12" height="12" rx="4" fill="#fff6e4" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<path d="M5 32h38v8H5z" fill="#ffd9c0" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<path d="M15 24h28v8H15z" fill="#a9d8f5" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<path d="M4 40v5M44 40v5" stroke="' + LINE + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<path d="M22 20l2 3 2-3" stroke="#ff9aa2" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '<path d="M30 14l1.6 3 1.6-3" stroke="#ffd166" stroke-width="2" fill="none" stroke-linecap="round"/>',
+
+    /* 设备区：齿轮 + 管道 */
+    gear:
+      '<circle cx="21" cy="24" r="10" fill="#cfd8dc" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<circle cx="21" cy="24" r="4" fill="#fff6e4" stroke="' + LINE + '" stroke-width="1.6"/>' +
+      '<path d="M21 9v5M21 34v5M6 24h5M31 24h5M10 13l4 4M28 31l4 4M32 13l-4 4M14 31l-4 4"' +
+        ' stroke="' + LINE + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<rect x="34" y="16" width="10" height="20" rx="5" fill="#8fd6bd" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<rect x="36" y="11" width="6" height="6" rx="2" fill="#cfd8dc" stroke="' + LINE + '" stroke-width="1.6"/>',
+
+    /* 舷梯 */
+    ladder:
+      '<path d="M14 6v36M34 6v36" stroke="' + LINE + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M14 14h20M14 22h20M14 30h20M14 38h20" stroke="' + LINE + '" stroke-width="2.6" stroke-linecap="round"/>'
   };
 
   return {

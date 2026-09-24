@@ -1,19 +1,19 @@
 /* ============================================================
- * 皇家潜艇平面图 + 房间面板 + 房间小场景
+ * 皇家潜艇平面图（儿童手绘风）+ 房间面板 + 房间小场景
+ * 画面结构见 js/art.js
  * ============================================================ */
 
 .sub-map {
   position: relative;
   background:
-    radial-gradient(120% 90% at 50% 15%, #2fb0e0, #0a6699 55%, #05456c 100%);
+    radial-gradient(130% 80% at 50% 8%, #9fe0f5 0%, #56b9de 38%, #1f80ad 72%, #12587a 100%);
   border-radius: var(--radius-lg);
-  padding: clamp(6px, 1.4vw, 12px);
-  border: 4px solid #cfeaf8;
-  box-shadow: inset 0 0 48px rgba(0, 0, 0, .3);
+  padding: clamp(4px, 1vw, 10px);
+  border: 4px solid #ffe9c4;
+  box-shadow: inset 0 0 60px rgba(4, 40, 60, .32);
   overflow: hidden;
 }
-/* 海水里飘过的光斑 */
-.sub-map::after {
+.sub-map::after {                      /* 水面晃动的光斑 */
   content: '';
   position: absolute; inset: 0;
   background: linear-gradient(100deg, rgba(255,255,255,.10) 0 5%, transparent 5.1% 18%);
@@ -22,133 +22,187 @@
 }
 .sub-svg { display: block; width: 100%; height: auto; position: relative; z-index: 1; }
 
+/* 手绘抖动：只作用在静态结构上，动画元素不加，避免手机掉帧 */
+.sk, .room__rect, .sea-floor { filter: url(#sketch); }
+
 /* 整张地图换成图片时用 */
 .sub-photo img { display: block; width: 100%; border-radius: var(--radius); }
-.sub-photo__hint { color: #cfefff; font-size: 13px; text-align: center; margin-top: 6px; }
+.sub-photo__hint { color: #ffeec2; font-size: 13px; text-align: center; margin-top: 6px; }
 
-.sub-name {
-  font-size: 22px; font-weight: 900; fill: #d7f1ff;
-  letter-spacing: 2px; font-family: var(--font);
-}
-.sub-window { fill: #7fd8f7; stroke: #ffffff; stroke-width: 3.5; }
+/* ---------------- 艇身元素 ---------------- */
+.sub-window { fill: #a9ddf5; stroke: #6b503a; stroke-width: 3.4; }
 .port__bub { animation: portBub 3.4s ease-in-out infinite; }
 .port__bub--2 { animation-delay: 1.1s; }
 .port__bub--3 { animation-delay: 2.2s; }
 @keyframes portBub {
   0%, 70%, 100% { opacity: 0; transform: translateY(0); }
   30%  { opacity: .9; }
-  69%  { opacity: 0; transform: translateY(-16px); }
+  69%  { opacity: 0; transform: translateY(-18px); }
 }
-.sub-light  { animation: subLight 2.6s ease-in-out infinite; }
-@keyframes subLight { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
-.sub-beam   { animation: subLight 2.6s ease-in-out infinite; }
-.sub-beacon { animation: blink 1.4s ease-in-out infinite; }
-.sub-propeller { animation: spin 2.4s linear infinite; }
+.sub-beam    { animation: beamGlow 3s ease-in-out infinite; }
+.sub-lamp    { animation: beamGlow 3s ease-in-out infinite; }
+@keyframes beamGlow { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+.sub-beacon  { animation: blink 1.4s ease-in-out infinite; }
+.sub-propeller { animation: spin 2.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes blink { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
 
+/* 皇冠：原画最重要的识别元素，轻轻发光 */
+.sub-crown { animation: crownShine 3.6s ease-in-out infinite; transform-origin: 588px 150px; }
+@keyframes crownShine {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 224, 120, .5)); transform: translateY(0); }
+  50%      { filter: drop-shadow(0 0 18px rgba(255, 224, 120, .95)); transform: translateY(-3px); }
+}
+.hull-name { opacity: .92; }
+.sub-ladder { opacity: .85; }
+
 /* ---------------- 房间 ---------------- */
 .room { cursor: pointer; }
-/* 内嵌图标按 x/y/width/height 定位，且不拦点击 */
 .map-icon, .room__label, .room__detail, .room__plate { pointer-events: none; }
 
 .room__rect {
-  stroke: #ffffff; stroke-width: 4;
-  transition: filter .15s ease, stroke .15s ease;
+  stroke: #6b503a; stroke-width: 3.4;
+  transition: filter .15s ease;
 }
-.room__plate { fill: rgba(255, 255, 255, .82); }
+.room__plate { fill: rgba(255, 250, 240, .92); stroke: #6b503a; stroke-width: 2; }
 .room__label {
   font-family: var(--font);
-  font-size: 19px; font-weight: 900; fill: #0d3149;
+  font-size: 19px; font-weight: 900; fill: #5b4636;
 }
-/* 轻微呼吸，提示"这里能点" */
-.room__glow {
-  stroke: #ffd166; stroke-width: 0;
-  opacity: 0;
-  animation: roomHint 4.5s ease-in-out infinite;
-}
-.room:nth-of-type(2) .room__glow { animation-delay: .7s; }
-.room:nth-of-type(3) .room__glow { animation-delay: 1.4s; }
-.room:nth-of-type(4) .room__glow { animation-delay: 2.1s; }
-.room:nth-of-type(5) .room__glow { animation-delay: 2.8s; }
-.room:nth-of-type(6) .room__glow { animation-delay: 3.5s; }
+.room__label--sm { font-size: 16px; letter-spacing: -1px; }
+
+/* 轮流轻闪，提示"这里能点" */
+.room__glow { stroke: #ffd45e; stroke-width: 0; opacity: 0; animation: roomHint 5s ease-in-out infinite; }
+.room:nth-of-type(2) .room__glow { animation-delay: .6s; }
+.room:nth-of-type(3) .room__glow { animation-delay: 1.2s; }
+.room:nth-of-type(4) .room__glow { animation-delay: 1.8s; }
+.room:nth-of-type(5) .room__glow { animation-delay: 2.4s; }
+.room:nth-of-type(6) .room__glow { animation-delay: 3s; }
+.room:nth-of-type(7) .room__glow { animation-delay: 3.6s; }
+.room:nth-of-type(8) .room__glow { animation-delay: 4.2s; }
 @keyframes roomHint {
-  0%, 82%, 100% { opacity: 0; stroke-width: 0; }
-  88%           { opacity: .9; stroke-width: 6; }
-  94%           { opacity: 0; stroke-width: 10; }
+  0%, 84%, 100% { opacity: 0; stroke-width: 0; }
+  89%           { opacity: .95; stroke-width: 6; }
+  95%           { opacity: 0; stroke-width: 11; }
 }
-.room:hover .room__rect,
-.room:focus .room__rect {
-  filter: brightness(1.09) drop-shadow(0 0 12px rgba(255, 255, 255, .95));
+.room:hover .room__rect, .room:focus .room__rect {
+  filter: url(#sketch) brightness(1.07) drop-shadow(0 0 12px rgba(255, 255, 255, .95));
 }
-.room:hover .room__detail { transform: translateY(-2px); }
 .room__detail { transition: transform .18s ease; }
+.room:hover .room__detail { transform: translateY(-2px); }
 .room:focus { outline: none; }
-.room:focus-visible .room__rect { stroke: #ffc34d; stroke-width: 7; }
+.room:focus-visible .room__rect { stroke: #ffb02e; stroke-width: 7; }
 .room.is-open .room__rect {
-  stroke: #ffc34d; stroke-width: 7;
-  filter: brightness(1.12) drop-shadow(0 0 14px rgba(255, 195, 77, .8));
+  stroke: #ffb02e; stroke-width: 6.5;
+  filter: url(#sketch) brightness(1.1) drop-shadow(0 0 16px rgba(255, 190, 60, .85));
 }
 .room.is-open .room__glow { animation: none; opacity: 0; }
 
-/* 地图里的小动画 */
-.map-radar { animation: spin 2.8s linear infinite; }
-.map-blip  { animation: blink 1.6s ease-in-out infinite; }
-.map-wheel { animation: wheelTilt 5s ease-in-out infinite; }
+/* 房间里的小动画 */
+.map-radar  { animation: spin 2.8s linear infinite; }
+.map-blip   { animation: blink 1.6s ease-in-out infinite; }
+.map-wheel  { animation: wheelTilt 5s ease-in-out infinite; }
 @keyframes wheelTilt { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
-.map-led      { animation: blink 1.8s ease-in-out infinite; }
-.map-led--2   { animation-delay: .4s; }
-.map-led--3   { animation-delay: .8s; }
+.map-valve  { animation: spin 6s linear infinite; }
+.map-led    { animation: blink 1.8s ease-in-out infinite; }
+.map-led--2 { animation-delay: .4s; }
+.map-led--3 { animation-delay: .8s; }
+.map-lamp   { animation: lampGlow 3s ease-in-out infinite; }
+@keyframes lampGlow { 0%,100% { opacity: .75; } 50% { opacity: 1; filter: drop-shadow(0 0 8px #ffe9a8); } }
+.map-disco  { animation: discoSpin 3s linear infinite; }
+@keyframes discoSpin {
+  0%,100% { filter: drop-shadow(0 0 3px #fff); }
+  50%     { filter: drop-shadow(0 0 14px #ffd6ef); }
+}
 .map-fish     { animation: mapSwim 7s linear infinite; }
 .map-fish--2  { animation-duration: 9s; animation-delay: 1.5s; }
 .map-fish--3  { animation-duration: 8s; animation-delay: .8s; }
 @keyframes mapSwim {
-  0%   { transform: translateX(0); opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateX(30px); opacity: 0; }
+  0%   { transform: translateX(-6px); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(34px); opacity: 0; }
 }
 .map-steam { animation: steamUp 2.6s ease-in-out infinite; }
 @keyframes steamUp {
-  0%   { opacity: 0; transform: translateY(4px); }
-  40%  { opacity: .9; }
-  100% { opacity: 0; transform: translateY(-10px); }
-}
-.map-bub      { animation: portBub 3s ease-in-out infinite; }
-.map-bub--2   { animation-delay: 1.2s; }
-.map-spot     { animation: spotSwing 3.6s ease-in-out infinite; transform-origin: center top; }
-.map-spot--2  { animation-direction: reverse; }
-@keyframes spotSwing { 0%,100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
-.map-dancer   { animation: dance 1.1s ease-in-out infinite; }
-.map-note     { animation: noteUp 3s ease-in-out infinite; }
-@keyframes noteUp {
   0%   { opacity: 0; transform: translateY(6px); }
+  40%  { opacity: .9; }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+.map-bub     { animation: portBub 3s ease-in-out infinite; }
+.map-bub--2  { animation-delay: 1.2s; }
+.map-spot    { animation: spotSwing 3.6s ease-in-out infinite; transform-origin: center top; }
+.map-spot--2 { animation-direction: reverse; }
+@keyframes spotSwing { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+.map-dancer    { animation: dance 1.1s ease-in-out infinite; }
+.map-dancer--2 { animation-duration: .9s; animation-delay: .25s; }
+.map-note      { animation: noteUp 3s ease-in-out infinite; }
+.map-note--2   { animation-delay: 1.5s; }
+@keyframes noteUp {
+  0%   { opacity: 0; transform: translateY(8px); }
   35%  { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-16px); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ---------------- 海底世界 ---------------- */
+.sea-rays   { animation: lightSway 14s ease-in-out infinite alternate; }
+.sea-dolphin { animation: dolphinSwim 16s ease-in-out infinite; }
+@keyframes dolphinSwim {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25%      { transform: translate(60px, -18px) rotate(-5deg); }
+  50%      { transform: translate(110px, 10px) rotate(4deg); }
+  75%      { transform: translate(50px, 24px) rotate(-3deg); }
+}
+.sea-jelly { animation: jellyFloat 7s ease-in-out infinite; }
+@keyframes jellyFloat {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50%      { transform: translateY(-26px) scaleY(1.07); }
+}
+.sea-fish     { animation: seaSwim 13s linear infinite; }
+.sea-fish--2  { animation-duration: 17s; animation-delay: -4s; }
+.sea-fish--3  { animation-duration: 15s; animation-delay: -8s; }
+@keyframes seaSwim {
+  0%   { transform: translateX(-40px); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateX(210px); opacity: 0; }
+}
+.sea-weed     { animation: weedBend 4.4s ease-in-out infinite; }
+.sea-weed--2  { animation-delay: .8s; animation-duration: 5.2s; }
+.sea-weed--3  { animation-delay: 1.6s; animation-duration: 3.8s; }
+@keyframes weedBend { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+.sea-octo { animation: octoBob 4s ease-in-out infinite; }
+@keyframes octoBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.sea-bub     { animation: seaBubUp 9s linear infinite; }
+.sea-bub--2  { animation-duration: 12s; animation-delay: -3s; }
+.sea-bub--3  { animation-duration: 10.5s; animation-delay: -6s; }
+@keyframes seaBubUp {
+  0%   { transform: translateY(0) scale(.6); opacity: 0; }
+  12%  { opacity: .9; }
+  100% { transform: translateY(-460px) scale(1.2); opacity: 0; }
 }
 
 /* ---------------- 房间面板 ---------------- */
 .room-panel { margin-top: 16px; }
 .room-panel.is-entering .room-card { animation: roomEnter .38s cubic-bezier(.2,1.2,.4,1); }
 @keyframes roomEnter {
-  0%   { transform: scale(.94) translateY(10px); opacity: 0; filter: brightness(1.6); }
-  60%  { filter: brightness(1.05); }
+  0%   { transform: scale(.94) translateY(10px); opacity: 0; filter: brightness(1.5); }
   100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1); }
 }
 .room-card {
-  background: linear-gradient(180deg, #f7fdff, #e9f6fd);
-  border: 4px solid #cfeaf8;
+  background: linear-gradient(180deg, #fffaf0, #ffeed6);
+  border: 4px solid #e8c98d;
   border-radius: var(--radius-lg);
   padding: clamp(12px, 2.2vw, 20px);
   text-align: center;
 }
 .room-card__head { display: flex; align-items: center; justify-content: center; gap: 10px; }
-.room-card__icon { background: #fff; border-radius: 50%; padding: 6px; box-shadow: var(--shadow-sm); display: block; }
-.room-card__title { font-size: clamp(20px, 3vw, 27px); color: var(--deep); margin: 0; }
-.room-card__desc { color: var(--ink-soft); max-width: 620px; margin: 4px auto 12px; font-size: clamp(15px, 1.7vw, 17px); }
+.room-card__icon { background: #fff; border-radius: 50%; padding: 6px; box-shadow: var(--shadow-sm); display: block; border: 2px solid #e8c98d; }
+.room-card__title { font-size: clamp(20px, 3vw, 27px); color: #5b4636; margin: 0; }
+.room-card__desc { color: #7b6450; max-width: 620px; margin: 4px auto 12px; font-size: clamp(15px, 1.7vw, 17px); }
 .room-card__body > .btn { display: block; margin: 10px auto 0; }
 .room-card__body .row .btn { display: inline-block; margin-top: 0; }
-.room__note { color: var(--ink-soft); font-size: 15px; margin-top: 8px; }
+.room__note { color: #8a7562; font-size: 15px; margin-top: 8px; }
 
 /* ---------------- 房间小场景 ---------------- */
 .scene {
@@ -158,17 +212,80 @@
   margin: 0 auto 14px;
   max-width: 580px;
   overflow: hidden;
+  border: 3px solid #e8c98d;
   background: linear-gradient(180deg, #bfe9ff, #7fd0f0);
   display: flex; align-items: center; justify-content: center; gap: 18px;
 }
+
+/* 休息区 */
+.scene--rest { background: linear-gradient(180deg, #ffeede, #ffd7bc); }
+.rest-bed { position: relative; width: min(280px, 70%); height: 78px; }
+.rest-bed::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 26px;
+  background: #e2a06a; border: 3px solid #6b503a; border-radius: 10px;
+}
+.rest-bed__pillow {
+  position: absolute; left: 6px; bottom: 22px; width: 62px; height: 40px;
+  background: #fffaf0; border: 3px solid #6b503a; border-radius: 12px;
+}
+.rest-bed__quilt {
+  position: absolute; right: 6px; bottom: 22px; width: 190px; height: 34px;
+  background: #a9d8f5; border: 3px solid #6b503a; border-radius: 12px;
+}
+.rest-lamp {
+  position: absolute; right: 8%; bottom: 26px;
+  width: 0; height: 0;
+  border-left: 26px solid transparent; border-right: 26px solid transparent;
+  border-bottom: 34px solid #ffe9a8;
+  filter: drop-shadow(0 0 10px rgba(255,233,168,.9));
+  animation: lampGlow 3s ease-in-out infinite;
+}
+.rest-zzz {
+  position: absolute; left: 32%; bottom: 60px;
+  font-size: 22px; font-weight: 900; color: #6b503a; opacity: 0;
+}
+.rest-zzz--2 { left: 40%; font-size: 26px; }
+.rest-zzz--3 { left: 48%; font-size: 32px; }
+.scene--rest.is-sleeping .rest-zzz { animation: zzzUp 1.8s ease-out 1; }
+.scene--rest.is-sleeping .rest-zzz--2 { animation-delay: .25s; }
+.scene--rest.is-sleeping .rest-zzz--3 { animation-delay: .5s; }
+@keyframes zzzUp {
+  0%   { opacity: 0; transform: translateY(0) rotate(-8deg); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-58px) rotate(12deg); }
+}
+
+/* 设备区 */
+.scene--engine { background: linear-gradient(180deg, #e9e4f8, #cdc2ef); }
+.eng-valve { display: block; }
+.scene--engine.is-running .eng-valve { animation: spin 1.4s linear 3; }
+.eng-tank {
+  display: block; width: 40px; height: 78px; border-radius: 20px;
+  background: #8fe3b8; border: 3px solid #6b503a;
+}
+.eng-tank--2 { height: 60px; background: #a9d8f5; }
+.eng-pipes { position: absolute; left: 0; right: 0; top: 16px; height: 30px; }
+.eng-pipes i {
+  position: absolute; left: 8%; right: 8%; height: 10px; border-radius: 6px;
+  background: #cfd8dc; border: 3px solid #6b503a;
+}
+.eng-pipes i:nth-child(2) { top: 20px; left: 22%; right: 22%; background: #e8c98d; }
+.eng-bub {
+  position: absolute; bottom: 12px; left: 30%;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(255,255,255,.9); opacity: 0;
+}
+.eng-bub--2 { left: 62%; }
+.scene--engine.is-running .eng-bub { animation: washUp 1.3s ease-out 2; }
+.scene--engine.is-running .eng-bub--2 { animation-delay: .3s; }
 
 /* 驾驶区 */
 .scene--bridge { background: linear-gradient(180deg, #dcefff, #a9d3f0); }
 .radar {
   position: relative; width: clamp(88px, 18vw, 118px); aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, #0b3d2e 0 55%, #0a5540 100%);
-  border: 5px solid #d9912c; overflow: hidden;
+  background: radial-gradient(circle, #0e4f3c 0 55%, #0a5540 100%);
+  border: 5px solid #6b503a; overflow: hidden;
 }
 .radar__grid {
   position: absolute; inset: 0;
@@ -187,12 +304,12 @@
 .wheel-spin { width: clamp(64px, 14vw, 96px); animation: wheelTilt 5s ease-in-out infinite; }
 .console-lights { display: flex; flex-direction: column; gap: 8px; }
 .console-lights span {
-  width: 16px; height: 16px; border-radius: 4px; background: #ff7a6b;
-  animation: blink 1.6s ease-in-out infinite;
+  width: 16px; height: 16px; border-radius: 4px; background: #ff9c8a;
+  border: 2px solid #6b503a; animation: blink 1.6s ease-in-out infinite;
 }
 .console-lights span:nth-child(2) { background: #ffd166; animation-delay: .3s; }
-.console-lights span:nth-child(3) { background: #7dffc0; animation-delay: .6s; }
-.console-lights span:nth-child(4) { background: #9be3ff; animation-delay: .9s; }
+.console-lights span:nth-child(3) { background: #8fe3b8; animation-delay: .6s; }
+.console-lights span:nth-child(4) { background: #a9d8f5; animation-delay: .9s; }
 
 /* 观景区 */
 .scene--view { background: linear-gradient(180deg, #58b8e0, #0b6a9c); }
@@ -200,10 +317,11 @@
 .porthole {
   position: relative;
   width: clamp(78px, 18vw, 118px); aspect-ratio: 1;
-  border-radius: 12px;                  /* 方形窗户 */
+  border-radius: 12px;
   background: linear-gradient(180deg, #9ee4ff, #2b93c9);
-  border: 6px solid #f2f6f9;
-  box-shadow: inset 0 0 18px rgba(0,0,0,.28);
+  border: 5px solid #fffaf0;
+  outline: 3px solid #6b503a;
+  box-shadow: inset 0 0 18px rgba(0,0,0,.26);
   overflow: hidden;
 }
 .porthole__ray {
@@ -215,15 +333,10 @@
 .porthole__fish--1 { animation: swimAcross 6.5s linear infinite; }
 .porthole__fish--2 { animation: swimAcross 8.5s linear infinite 1.2s; }
 .porthole__fish--3 { animation: swimAcross 10s linear infinite .6s; }
-@keyframes swimAcross {
-  from { transform: translateX(0); }
-  to   { transform: translateX(240%); }
-}
+@keyframes swimAcross { from { transform: translateX(0); } to { transform: translateX(240%); } }
 .porthole__bub {
-  position: absolute; bottom: 6px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,.85);
-  animation: bubRise 4s linear infinite;
+  position: absolute; bottom: 6px; width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.85); animation: bubRise 4s linear infinite;
 }
 .porthole__bub--a { left: 24%; }
 .porthole__bub--b { left: 68%; animation-delay: 1.8s; }
@@ -233,50 +346,49 @@
   100% { transform: translateY(-90px) scale(1.1); opacity: 0; }
 }
 .reef { position: absolute; bottom: 0; left: 0; right: 0; height: 40px; display: flex; gap: 18px; justify-content: center; }
-.reef__coral { width: 22px; align-self: flex-end; height: 32px; background: #ff9aa2; border-radius: 12px 12px 0 0; }
+.reef__coral { width: 22px; align-self: flex-end; height: 32px; background: #ff9aa2; border: 2px solid #6b503a; border-radius: 12px 12px 0 0; }
 .reef__coral:nth-child(2) { background: #ffd166; height: 22px; }
 .reef__coral:nth-child(3) { background: #8ce0c0; height: 38px; }
 .reef__coral:nth-child(4) { background: #c8a7ff; height: 26px; }
 .reef__coral:nth-child(5) { background: #ffb3c6; height: 30px; }
 
 /* 餐厅 */
-.scene--dining { background: linear-gradient(180deg, #ffeacd, #ffd1a1); }
+.scene--dining { background: linear-gradient(180deg, #fff0d6, #ffd9ab); }
 .dining-table { position: relative; width: min(340px, 86%); height: 100%; }
 .dining-table__top {
-  position: absolute; bottom: 38px; left: 0; right: 0; height: 16px;
-  background: #d79a4e; border-radius: 8px; box-shadow: var(--shadow-sm);
+  position: absolute; bottom: 38px; left: 0; right: 0; height: 18px;
+  background: #ffdcab; border: 3px solid #6b503a; border-radius: 50%;
 }
 .dining-table__legs { position: absolute; bottom: 0; left: 0; right: 0; height: 40px; }
-.dining-table__legs span { position: absolute; width: 12px; height: 40px; background: #b07a3c; border-radius: 4px; }
-.dining-table__legs span:first-child { left: 12%; }
-.dining-table__legs span:last-child  { right: 12%; }
-.dish { position: absolute; bottom: 52px; width: clamp(44px, 10vw, 62px); animation: dishBob 2.6s ease-in-out infinite; }
-.dish--1 { left: 4%; }
+.dining-table__legs span { position: absolute; width: 12px; height: 40px; background: #d79a4e; border: 3px solid #6b503a; border-radius: 4px; }
+.dining-table__legs span:first-child { left: 22%; }
+.dining-table__legs span:last-child  { right: 22%; }
+.dish { position: absolute; bottom: 50px; width: clamp(44px, 10vw, 62px); animation: dishBob 2.6s ease-in-out infinite; }
+.dish--1 { left: 6%; }
 .dish--2 { left: 38%; animation-delay: .4s; }
-.dish--3 { left: 72%; animation-delay: .8s; }
+.dish--3 { left: 70%; animation-delay: .8s; }
 .steam {
   position: absolute; top: -12px; left: 50%;
   width: 4px; height: 14px; border-radius: 3px;
-  background: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.9);
   animation: steamUp 2.4s ease-in-out infinite;
 }
 @keyframes dishBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
 /* 储藏区 */
-.scene--storage { background: linear-gradient(180deg, #ece4ff, #c6b7f5); }
+.scene--storage { background: linear-gradient(180deg, #f2e9d5, #dccdaa); }
 .crate { width: clamp(46px, 10vw, 68px); display: block; animation: dishBob 3s ease-in-out infinite; z-index: 2; }
 .crate--2 { animation-delay: .4s; }
 .crate--3 { animation-delay: .8s; }
 .crate--4 { animation-delay: 1.2s; }
-.shelf { position: absolute; left: 6%; right: 6%; bottom: 26px; height: 10px; border-radius: 5px; background: #a98cf0; }
+.shelf { position: absolute; left: 6%; right: 6%; bottom: 26px; height: 10px; border-radius: 5px; background: #c9a87c; border: 3px solid #6b503a; }
 
 /* 厕所 */
-.scene--toilet { background: linear-gradient(180deg, #e9f8ff, #bfe6f7); }
+.scene--toilet { background: linear-gradient(180deg, #eaf9ff, #bfe6f7); }
 .sink-bubbles { position: absolute; bottom: 20px; left: 50%; width: 80px; height: 60px; margin-left: -40px; }
 .sink-bubbles span {
-  position: absolute; bottom: 0;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: rgba(255,255,255,.95); opacity: 0;
+  position: absolute; bottom: 0; width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(255,255,255,.95); border: 2px solid rgba(107,80,58,.5); opacity: 0;
 }
 .sink-bubbles span:nth-child(1) { left: 0; }
 .sink-bubbles span:nth-child(2) { left: 22px; }
@@ -293,27 +405,25 @@
 }
 
 /* 舞台 */
-.scene--stage { background: linear-gradient(180deg, #3b2a5c, #6a4b8f); overflow: hidden; }
+.scene--stage { background: linear-gradient(180deg, #4b3670, #7d5aa8); overflow: hidden; }
 .spot {
-  position: absolute; top: -36px;
-  width: 0; height: 0;
-  border-left: 56px solid transparent;
-  border-right: 56px solid transparent;
-  border-bottom: 210px solid rgba(255, 233, 168, .32);
-  filter: blur(2px);
-  transform-origin: top center;
+  position: absolute; top: -36px; width: 0; height: 0;
+  border-left: 56px solid transparent; border-right: 56px solid transparent;
+  border-bottom: 210px solid rgba(255, 233, 168, .34);
+  filter: blur(2px); transform-origin: top center;
 }
 .spot--l { left: 10%; animation: spotSwing 3.4s ease-in-out infinite; }
-.spot--r { right: 10%; border-bottom-color: rgba(255, 209, 240, .32); animation: spotSwing 3.4s ease-in-out infinite reverse; }
+.spot--r { right: 10%; border-bottom-color: rgba(255, 209, 240, .34); animation: spotSwing 3.4s ease-in-out infinite reverse; }
 .scene--stage.is-on .spot { filter: blur(1px) brightness(1.5); }
 .disco {
-  position: absolute; top: 8px; left: 50%; margin-left: -14px;
-  width: 28px; height: 28px; border-radius: 50%;
+  position: absolute; top: 8px; left: 50%; margin-left: -15px;
+  width: 30px; height: 30px; border-radius: 50%;
   background: conic-gradient(#fff, #ffd166, #9be3ff, #ff9aa2, #fff);
+  border: 2px solid #6b503a;
   animation: spin 3s linear infinite;
-  box-shadow: 0 0 18px rgba(255,255,255,.7);
+  box-shadow: 0 0 18px rgba(255,255,255,.75);
 }
-.stage-floor { position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(180deg, #d79a4e, #a86f2c); }
+.stage-floor { position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: #d79a4e; border-top: 3px solid #6b503a; }
 .performer { position: relative; z-index: 2; display: block; }
 .performer.is-singing { animation: sing .6s ease-in-out 5; }
 .performer.is-dancing { animation: dance .5s ease-in-out 6; }
@@ -326,27 +436,27 @@
 /* ---------------- 驾驶区距离表 ---------------- */
 .dist-list {
   display: inline-block; text-align: left; min-width: min(360px, 92%);
-  background: #fff; border-radius: var(--radius);
+  background: #fffaf0; border: 2px solid #e8c98d; border-radius: var(--radius);
   padding: 8px 16px; margin-bottom: 4px;
 }
 .dist-list li {
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 0; border-bottom: 1px dashed #e2eef5;
+  padding: 6px 0; border-bottom: 1px dashed #e8d9bd;
   font-size: clamp(15px, 1.7vw, 17px);
 }
 .dist-list li:last-child { border-bottom: none; }
-.dist-list__name { font-weight: 800; color: var(--deep); flex: 1; }
-.dist-list__val  { color: var(--ink-soft); }
+.dist-list__name { font-weight: 800; color: #5b4636; flex: 1; }
+.dist-list__val  { color: #8a7562; }
 
 /* ---------------- 储藏区装备清单 ---------------- */
 .gear-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 8px; }
 .gear-list li {
-  background: #fff; border: 2px solid #d9e9f2; border-radius: 999px;
+  background: #fffaf0; border: 2px solid #e8c98d; border-radius: 999px;
   padding: 5px 14px; font-weight: 800; font-size: 15px;
 }
 
 @media (max-width: 520px) {
-  .sub-name { font-size: 26px; }
-  .room__label { font-size: 22px; }
+  .room__label { font-size: 23px; }
+  .room__label--sm { font-size: 19px; }
   .scene { height: 130px; }
 }

@@ -43,7 +43,7 @@ RS.ui = (function () {
     $('#hudRole').textContent = role ? role.name : '—';
     $('#hudTasks').textContent = String(s.tasksCompleted);
     var logo = $('#hudLogo');
-    if (logo && !logo.innerHTML) { logo.innerHTML = RS.icons.get('sub'); }
+    if (logo && !logo.innerHTML) { logo.innerHTML = RS.icons.get('crown'); }
 
     var gear = RS.state.gearList();
     var gearEl = $('#hudGear');

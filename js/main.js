@@ -15,10 +15,14 @@ RS.main = (function () {
   function renderStart() {
     ui.$('#heroArt').innerHTML =
       '<span class="hero__beam"></span>' +
+      '<span class="hero__crown">' + RS.icons.get('crown') + '</span>' +
       RS.icons.get('sub', 'icon--hero') +
       '<span class="hero__fish hero__fish--1">' + RS.icons.get('fish', 'icon--mini') + '</span>' +
       '<span class="hero__fish hero__fish--2">' + RS.icons.get('rareFish', 'icon--mini') + '</span>' +
       '<span class="hero__fish hero__fish--3">' + RS.icons.get('chest', 'icon--mini') + '</span>';
+
+    var tc = ui.$('#titleCrown');
+    if (tc && !tc.innerHTML) { tc.innerHTML = RS.icons.get('crown'); }
 
     var sum = RS.state.savedSummary();
     var tip = ui.$('#startSaveTip');

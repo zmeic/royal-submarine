@@ -137,27 +137,27 @@ RS.config = {
   /* 任务地点距离（米）随机范围，船长能看到准确数字 */
   distance: { min: 200, max: 3200 },
 
-  /* ---------------- 潜艇房间 ---------------- */
+  /* ---------------- 潜艇房间（顺序按原画的分区：上层左→右，下层左→右） ---------------- */
   rooms: [
+    {
+      id: 'rest', name: '休息区', icon: 'bed',
+      desc: '软软的小床和暖暖的夜灯，累了来躺一会儿。',
+      action: 'rest'
+    },
+    {
+      id: 'dining', name: '餐厅', icon: 'table',
+      desc: '大圆桌摆好了热菜，吃饱更有劲。',
+      action: 'eat'
+    },
+    {
+      id: 'stage', name: '舞台', icon: 'stage',
+      desc: '灯球转起来，上台唱歌跳舞！',
+      action: 'show'
+    },
     {
       id: 'bridge', name: '驾驶区', icon: 'wheel',
       desc: '大方向舵 + 雷达屏，从这里出发去任务！',
       action: 'tasks'
-    },
-    {
-      id: 'view', name: '观景区', icon: 'window',
-      desc: '方形大窗户，外面就是海底世界。',
-      action: 'view'
-    },
-    {
-      id: 'dining', name: '餐厅', icon: 'table',
-      desc: '餐桌上摆好了热菜，吃饱更有劲。',
-      action: 'eat'
-    },
-    {
-      id: 'storage', name: '储藏区', icon: 'box',
-      desc: '装备和粮食都放在这儿。',
-      action: 'shop'
     },
     {
       id: 'toilet', name: '厕所', icon: 'toilet',
@@ -165,9 +165,19 @@ RS.config = {
       action: 'wash'
     },
     {
-      id: 'stage', name: '舞台', icon: 'stage',
-      desc: '灯光转起来，上台唱歌跳舞！',
-      action: 'show'
+      id: 'engine', name: '设备区', icon: 'gear',
+      desc: '管道、氧气罐和大阀门，潜艇靠它们前进。',
+      action: 'engine'
+    },
+    {
+      id: 'storage', name: '储藏区', icon: 'box',
+      desc: '宝箱、货架和小机器人都在这儿。',
+      action: 'shop'
+    },
+    {
+      id: 'view', name: '观景区', icon: 'window',
+      desc: '一整面落地舷窗，外面就是海底世界。',
+      action: 'view'
     }
   ],
 

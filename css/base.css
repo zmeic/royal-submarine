@@ -15,9 +15,11 @@
   --green:     #2fc98a;
   --green-dk:  #0f7a53;
   --purple:    #8c7ae6;
-  --ink:       #0d3149;
-  --ink-soft:  #3d6b86;
+  --ink:       #5b4636;      /* 手绘暖棕，代替冷硬的深蓝黑 */
+  --ink-soft:  #8a7562;
   --white:     #ffffff;
+  --line:      #6b503a;      /* 线条色，和 SVG 里的描边一致 */
+  --paper:     #fffaf0;      /* 纸感底色 */
 
   --radius:    18px;
   --radius-lg: 28px;
@@ -40,7 +42,7 @@ body {
   font-size: clamp(16px, 1.15vw + 12px, 19px);
   line-height: 1.6;
   color: var(--ink);
-  background: #042b46;   /* 真正的渐变画在 .ocean-bg 上，页面再长也不会露白 */
+  background: #0d4f70;   /* 真正的渐变画在 .ocean-bg 上，页面再长也不会露白 */
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
@@ -59,7 +61,7 @@ button, .task-card, .zone, .tool, .room, .fish { touch-action: manipulation; }
 /* ---------------- 海洋背景 ---------------- */
 .ocean-bg {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-  background: linear-gradient(180deg, #0e88c4 0%, #075b8e 45%, #042b46 100%);
+  background: linear-gradient(180deg, #7fd3ef 0%, #2a9ac6 38%, #0f6b96 72%, #0a4463 100%);
 }
 .ocean-bg__light {
   position: absolute;

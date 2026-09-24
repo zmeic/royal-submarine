@@ -56,6 +56,16 @@ RS.submarine = (function () {
     return '<button class="btn btn--primary btn--lg" type="button" data-room-action="wash">🫧 洗洗手</button>';
   }
 
+  function restBody() {
+    return '<button class="btn btn--primary btn--xl" type="button" data-room-action="rest">😴 躺一会儿</button>' +
+      '<p class="room__note">休息一下，什么都不会扣。</p>';
+  }
+
+  function engineBody() {
+    return '<button class="btn btn--primary btn--lg" type="button" data-room-action="engine">🔧 检查设备</button>' +
+      '<p class="room__note">阀门转一转，潜艇跑得更稳。</p>';
+  }
+
   function stageBody() {
     return '<div class="row row--center">' +
         '<button class="btn btn--primary btn--lg" type="button" data-room-action="sing">🎤 唱歌</button>' +
@@ -65,7 +75,8 @@ RS.submarine = (function () {
 
   var BODY = {
     bridge: bridgeBody, view: viewBody, dining: diningBody,
-    storage: storageBody, toilet: toiletBody, stage: stageBody
+    storage: storageBody, toilet: toiletBody, stage: stageBody,
+    rest: restBody, engine: engineBody
   };
 
   /* ---------------- 打开房间 ---------------- */
@@ -135,6 +146,30 @@ RS.submarine = (function () {
       }
       RS.sound.play('bubble');
       ui.toast('手洗干净啦！', 'good', 1500);
+      return;
+    }
+
+    if (action === 'rest') {
+      var bed = document.querySelector('.scene--rest');
+      if (bed) {
+        bed.classList.remove('is-sleeping');
+        void bed.offsetWidth;
+        bed.classList.add('is-sleeping');
+      }
+      RS.sound.play('bubble');
+      ui.toast('呼——睡了一小会儿，精神多啦！', 'good', 1800);
+      return;
+    }
+
+    if (action === 'engine') {
+      var eng = document.querySelector('.scene--engine');
+      if (eng) {
+        eng.classList.remove('is-running');
+        void eng.offsetWidth;
+        eng.classList.add('is-running');
+      }
+      RS.sound.play('step');
+      ui.toast('设备一切正常 ⚙️', 'good', 1600);
       return;
     }
 
