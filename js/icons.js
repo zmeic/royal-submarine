@@ -1,7 +1,11 @@
 /* ============================================================
- * 占位美术：全部是内联 SVG，不依赖任何外部图片。
+ * 占位美术：默认全部是内联 SVG，不依赖任何外部图片。
+ *
  * 用法：RS.icons.get('fish')  ->  '<svg ...>...</svg>'
- * 以后有正式素材，只要替换这里对应的图形即可。
+ *
+ * 换成真正的图片：在 js/art.js 的 RS.art.images 里写上
+ *   fish: 'assets/fish-normal.png'
+ * 这里就会自动改成 <img>，其它代码一行都不用动。
  * ============================================================ */
 window.RS = window.RS || {};
 
@@ -67,16 +71,20 @@ RS.icons = (function () {
 
     /* ---- 任务相关 ---- */
     fish:
-      '<path d="M6 24q10-11 22-11 10 0 14 11-4 11-14 11-12 0-22-11z" fill="#4ec3f0"/>' +
-      '<path d="M42 24l-8-6v12z" fill="#2aa4d4"/>' +
-      '<circle cx="18" cy="21" r="2.4" fill="#fff"/><circle cx="18" cy="21" r="1.2" fill="#123"/>' +
-      '<path d="M24 14q4 4 0 8" stroke="#2aa4d4" stroke-width="2" fill="none"/>',
+      '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="#4ec3f0"/>' +
+      '<path d="M5 24q7 5 15 6-5 5-15 4z" fill="#3aafe0"/>' +
+      '<path d="M43 24l-9-7v14z" fill="#2aa4d4"/>' +
+      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="#7fd8f7"/>' +
+      '<circle cx="17" cy="21" r="2.8" fill="#fff"/><circle cx="17.6" cy="21" r="1.4" fill="#123"/>' +
+      '<path d="M23 13q5 4 1 9" stroke="#2aa4d4" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
     rareFish:
-      '<path d="M6 24q10-11 22-11 10 0 14 11-4 11-14 11-12 0-22-11z" fill="#ffc94a"/>' +
-      '<path d="M42 24l-8-6v12z" fill="#f2a33c"/>' +
-      '<circle cx="18" cy="21" r="2.6" fill="#fff"/><circle cx="18" cy="21" r="1.3" fill="#123"/>' +
-      '<path d="M26 13l3 5-3 5-3-5z" fill="#fff6d6"/>' +
-      '<path d="M12 30q8 4 18 0" stroke="#f2a33c" stroke-width="2" fill="none"/>',
+      '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="#ffd45e"/>' +
+      '<path d="M5 24q7 5 15 6-5 5-15 4z" fill="#f7b937"/>' +
+      '<path d="M43 24l-9-7v14z" fill="#f2a33c"/>' +
+      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="#fff3c4"/>' +
+      '<circle cx="17" cy="21" r="3" fill="#fff"/><circle cx="17.6" cy="21" r="1.5" fill="#123"/>' +
+      '<path d="M27 12l2.4 5 5 2.4-5 2.4-2.4 5-2.4-5-5-2.4 5-2.4z" fill="#fffbe8"/>' +
+      '<path d="M11 29q9 5 20 1" stroke="#f2a33c" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
     chest:
       '<rect x="8" y="22" width="32" height="18" rx="3" fill="#b07a3c"/>' +
       '<path d="M8 22q16-12 32 0z" fill="#d79a4e"/>' +
@@ -156,12 +164,30 @@ RS.icons = (function () {
       '<path d="M24 6l5.5 11.5L42 19l-9 9 2.2 12.5L24 34.5 12.8 40.5 15 28l-9-9 12.5-1.5z" fill="#ffc34d"/>',
     bubble:
       '<circle cx="24" cy="24" r="16" fill="#cfefff" opacity=".7"/>' +
-      '<circle cx="18" cy="18" r="5" fill="#fff" opacity=".8"/>'
+      '<circle cx="18" cy="18" r="5" fill="#fff" opacity=".8"/>',
+    sparkle:
+      '<path d="M24 4l4 14 14 4-14 4-4 14-4-14-14-4 14-4z" fill="#fff3c4"/>' +
+      '<circle cx="24" cy="24" r="4" fill="#fff"/>',
+    chestOpen:
+      '<path d="M8 20q16-14 32 0l-2 4H10z" fill="#d79a4e"/>' +
+      '<rect x="8" y="24" width="32" height="16" rx="3" fill="#b07a3c"/>' +
+      '<rect x="8" y="26" width="32" height="4" fill="#ffc34d"/>' +
+      '<circle cx="17" cy="34" r="4" fill="#ffe066"/><circle cx="25" cy="36" r="4" fill="#ffd166"/>' +
+      '<circle cx="33" cy="34" r="4" fill="#fff0b8"/>' +
+      '<path d="M24 6l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fffbe8"/>',
+    wave:
+      '<path d="M2 28q8-8 16 0t16 0 12-4" stroke="#7fd8f7" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M2 38q8-8 16 0t16 0 12-4" stroke="#cfefff" stroke-width="4" fill="none" stroke-linecap="round"/>'
   };
 
   return {
-    /** 取得某个图标的 SVG 字符串 */
+    /** 取得某个图标（优先用 RS.art.images 里配置的图片） */
     get: function (name, extraClass, bare) {
+      var img = (window.RS && RS.art && RS.art.imageFor) ? RS.art.imageFor(name) : null;
+      if (img && !bare) {
+        return '<img class="icon icon--img ' + (extraClass || '') + '" src="' + img +
+          '" alt="" aria-hidden="true" draggable="false" />';
+      }
       var inner = shapes[name];
       if (!inner) { inner = shapes.bubble; }
       return wrap(inner, extraClass, bare);

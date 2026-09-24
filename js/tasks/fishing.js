@@ -1,7 +1,7 @@
 /* ============================================================
  * 任务一：捕鱼
  * 鱼从两边游过来，点中就捕到。普通鱼 +2 分，稀有鱼 +5 分。
- * 至少捕到 1 条算完成任务。
+ * 至少捕到 1 条就算完成。
  * ============================================================ */
 window.RS = window.RS || {};
 RS.taskGames = RS.taskGames || {};
@@ -10,48 +10,73 @@ RS.taskGames.fishing = (function () {
   var cfg = RS.config.tasks.fishing;
   var ui = RS.ui;
 
-  var g = null; // 当前这一局的数据
+  var g = null;
 
   function tankSize() {
     var t = g.tank;
-    return {
-      w: t.clientWidth || 700,
-      h: t.clientHeight || 340
-    };
+    return { w: t.clientWidth || 700, h: t.clientHeight || 340 };
   }
 
-  function spawnFish() {
+  /* 只负责放一条鱼，不负责排下一次（避免开出两条并行的生成链） */
+  function spawnOne() {
     if (!g || !g.running) { return; }
     var size = tankSize();
     var rare = Math.random() < g.rareChance;
-    var fishW = rare ? 130 : 112;
+
+    /* 大小略有差异，看起来更自然 */
+    var base = rare ? 128 : 104;
+    var fishW = Math.round(base * (0.9 + Math.random() * 0.25));
+    var fishH = fishW;                       // 图标是正方形画布
     var fromLeft = Math.random() < 0.5;
-    var speed = (rare ? 150 : 105) + Math.random() * 50;
+    /* 速度：儿童友好，稀有鱼稍快一点但不会快到点不中 */
+    var speed = (rare ? 108 : 82) + Math.random() * 34;
+
+    /* 保证整条鱼都留在水槽里、且不会被底部沙地挡住 */
+    var sand = 54;
+    var maxY = Math.max(6, size.h - fishH - sand);
+    var baseY = 6 + Math.random() * maxY;
 
     var node = ui.el('button', 'fish' + (rare ? ' fish--rare' : '') + (g.bigHit ? ' fish--big' : ''));
     node.type = 'button';
-    node.setAttribute('aria-label', rare ? '稀有鱼，点击捕捉' : '普通鱼，点击捕捉');
-    node.innerHTML = RS.icons.get(rare ? 'rareFish' : 'fish', 'icon--fish');
+    node.setAttribute('aria-label', rare ? '稀有鱼，点击捕捉，5 分' : '普通鱼，点击捕捉，2 分');
+    node.innerHTML =
+      (rare ? '<span class="fish__glow"></span>' : '') +
+      '<span class="fish__body">' + RS.icons.get(rare ? 'rareFish' : 'fish', 'icon--fish') + '</span>' +
+      (rare ? '<span class="fish__tag">稀有</span>' : '');
     node.style.width = fishW + 'px';
 
     var fish = {
       el: node,
       x: fromLeft ? -fishW : size.w,
-      baseY: 10 + Math.random() * Math.max(20, size.h - 140),
+      baseY: baseY,
       dir: fromLeft ? 1 : -1,
       speed: speed,
       w: fishW,
       rare: rare,
       points: rare ? cfg.rarePoints : cfg.normalPoints,
       phase: Math.random() * Math.PI * 2,
+      wobble: 8 + Math.random() * 10,     // 上下摆动幅度
+      wobbleSpeed: 1.4 + Math.random(),
       alive: true
     };
-    node.style.transform = 'translate(' + fish.x + 'px,' + fish.baseY + 'px)' +
-      (fish.dir < 0 ? ' scaleX(-1)' : '');
+    place(fish, fish.baseY);
     g.fishes.push(fish);
     g.tank.appendChild(node);
 
-    g.spawnTimer = window.setTimeout(spawnFish, g.spawnEvery + Math.random() * 400);
+  }
+
+  /* 排下一条鱼：整局只有这一条生成链 */
+  function scheduleSpawn() {
+    if (!g || !g.running) { return; }
+    g.spawnTimer = window.setTimeout(function () {
+      spawnOne();
+      scheduleSpawn();
+    }, g.spawnEvery + Math.random() * 380);
+  }
+
+  function place(fish, y) {
+    fish.el.style.transform = 'translate(' + fish.x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)' +
+      (fish.dir < 0 ? ' scaleX(-1)' : '');
   }
 
   function catchFish(fish, ev) {
@@ -62,23 +87,45 @@ RS.taskGames.fishing = (function () {
     fish.el.classList.add('is-caught');
     fish.el.disabled = true;
 
-    var x = ev && ev.clientX ? ev.clientX : 0;
-    var y = ev && ev.clientY ? ev.clientY : 0;
-    if (x || y) { ui.floatText('+' + fish.points, x, y, fish.rare ? 'rare' : 'score'); }
-    else { ui.floatFromEl('+' + fish.points, fish.el, 'score'); }
+    var x = (ev && ev.clientX) ? ev.clientX : 0;
+    var y = (ev && ev.clientY) ? ev.clientY : 0;
+    if (!x && !y) {
+      var r = fish.el.getBoundingClientRect();
+      x = r.left + r.width / 2; y = r.top + r.height / 2;
+    }
+
+    if (fish.rare) {
+      ui.floatText('+' + fish.points + ' 稀有鱼！', x, y, 'rare');
+      ui.burst(x, y, 16, 160);
+      RS.sound.play('rare');
+      flashTank();
+    } else {
+      ui.floatText('+' + fish.points, x, y, 'score');
+      ui.burst(x, y, 6, 80);
+      RS.sound.play('fish');
+    }
 
     updateHud();
     window.setTimeout(function () {
       if (fish.el.parentNode) { fish.el.parentNode.removeChild(fish.el); }
-    }, 320);
+    }, 340);
+  }
+
+  function flashTank() {
+    if (!g || !g.tank) { return; }
+    g.tank.classList.remove('is-flash');
+    void g.tank.offsetWidth;
+    g.tank.classList.add('is-flash');
   }
 
   function updateHud() {
     if (!g) { return; }
     var rare = g.caught.filter(function (k) { return k === 'rare'; }).length;
     var normal = g.caught.length - rare;
-    g.countEl.innerHTML = '普通鱼 <strong>' + normal + '</strong> 条 ｜ 稀有鱼 <strong>' + rare +
-      '</strong> 条 ｜ 本次 <strong>' + g.points + '</strong> 分';
+    g.countEl.innerHTML =
+      '<span class="catch-chip">' + RS.icons.get('fish', 'icon--chip') + '普通 <strong>' + normal + '</strong></span>' +
+      '<span class="catch-chip catch-chip--rare">' + RS.icons.get('rareFish', 'icon--chip') + '稀有 <strong>' + rare + '</strong></span>' +
+      '<span class="catch-chip catch-chip--score">本次 <strong>' + g.points + '</strong> 分</span>';
   }
 
   function frame(now) {
@@ -95,10 +142,9 @@ RS.taskGames.fishing = (function () {
         continue;
       }
       f.x += f.speed * f.dir * dt;
-      f.phase += dt * 2;
-      var y = f.baseY + Math.sin(f.phase) * 12;
-      f.el.style.transform = 'translate(' + f.x + 'px,' + y + 'px)' + (f.dir < 0 ? ' scaleX(-1)' : '');
-      if ((f.dir > 0 && f.x > size.w + 20) || (f.dir < 0 && f.x < -f.w - 20)) {
+      f.phase += dt * f.wobbleSpeed;
+      place(f, f.baseY + Math.sin(f.phase) * f.wobble);
+      if ((f.dir > 0 && f.x > size.w + 30) || (f.dir < 0 && f.x < -f.w - 30)) {
         if (f.el.parentNode) { f.el.parentNode.removeChild(f.el); }
         g.fishes.splice(i, 1);
       }
@@ -107,6 +153,7 @@ RS.taskGames.fishing = (function () {
     var left = Math.max(0, (g.endAt - Date.now()) / 1000);
     g.timeEl.textContent = left.toFixed(1) + ' 秒';
     g.barEl.style.width = (left / g.duration * 100) + '%';
+    g.barEl.classList.toggle('is-low', left <= 6);
     if (left <= 0) { finish(); return; }
 
     g.raf = window.requestAnimationFrame(frame);
@@ -114,18 +161,18 @@ RS.taskGames.fishing = (function () {
 
   function finish() {
     if (!g || !g.running) { return; }
+    var rare = g.caught.filter(function (k) { return k === 'rare'; }).length;
+    var normal = g.caught.length - rare;
     var result = {
       success: g.caught.length > 0,
       points: g.points,
       lines: []
     };
-    var rare = g.caught.filter(function (k) { return k === 'rare'; }).length;
-    var normal = g.caught.length - rare;
-    result.lines.push('普通鱼 ' + normal + ' 条（每条 ' + cfg.normalPoints + ' 分）');
-    result.lines.push('稀有鱼 ' + rare + ' 条（每条 ' + cfg.rarePoints + ' 分）');
+    if (normal > 0) { result.lines.push('普通鱼 ' + normal + ' 条 · 每条 ' + cfg.normalPoints + ' 分'); }
+    if (rare > 0) { result.lines.push('✨ 稀有鱼 ' + rare + ' 条 · 每条 ' + cfg.rarePoints + ' 分'); }
     result.message = result.success
       ? '收网啦！一共捕到 ' + g.caught.length + ' 条鱼。'
-      : '这次一条也没捕到，没关系，鱼跑得快，再来一次！';
+      : '鱼儿今天游得快，一条都没抓住。再来一次就好啦！';
     var cb = g.onFinish;
     stop();
     cb(result);
@@ -150,24 +197,29 @@ RS.taskGames.fishing = (function () {
       (oxygen ? cfg.oxygenBonusTime : 0);
 
     var helpers = [];
-    if (hasHook) { helpers.push('鱼钩：鱼来得更快，也更好点中'); }
-    if (hasSpear) { helpers.push('鱼枪：稀有鱼出现得更多'); }
-    if (oxygen) { helpers.push('氧气瓶：时间 +' + cfg.oxygenBonusTime + ' 秒'); }
-    if (isDiver) { helpers.push('潜水员：时间 +' + cfg.diverBonusTime + ' 秒'); }
+    if (hasHook) { helpers.push('🪝 鱼更多'); }
+    if (hasSpear) { helpers.push('🔱 稀有鱼更多'); }
+    if (oxygen) { helpers.push('🫧 +' + cfg.oxygenBonusTime + '秒'); }
+    if (isDiver) { helpers.push('🤿 +' + cfg.diverBonusTime + '秒'); }
 
     area.innerHTML =
       '<div class="game">' +
         '<div class="game__top">' +
-          '<p class="game__goal">🎯 ' + cfg.intro + '</p>' +
+          '<p class="game__goal">🎯 点中游过的鱼！<b>普通鱼 +2</b> · <b class="is-rare">稀有鱼 +5</b></p>' +
           '<div class="timer">' +
             '<div class="timer__bar"><span class="timer__fill" id="fishBar"></span></div>' +
             '<span class="timer__text" id="fishTime">' + duration.toFixed(1) + ' 秒</span>' +
           '</div>' +
           '<p class="game__count" id="fishCount"></p>' +
-          (helpers.length ? '<p class="game__helpers">装备加成：' + helpers.join('；') + '</p>'
-            : '<p class="game__helpers game__helpers--none">还没有装备加成，攒够积分去便利店换鱼钩吧！</p>') +
+          (helpers.length
+            ? '<p class="game__helpers">装备加成：' + helpers.join(' · ') + '</p>'
+            : '<p class="game__helpers game__helpers--none">买个鱼钩，鱼会更多哦</p>') +
         '</div>' +
-        '<div class="tank" id="fishTank"><div class="tank__sand"></div></div>' +
+        '<div class="tank" id="fishTank">' +
+          '<span class="tank__ray tank__ray--1"></span><span class="tank__ray tank__ray--2"></span>' +
+          '<div class="tank__weeds"><i></i><i></i><i></i><i></i></div>' +
+          '<div class="tank__sand"></div>' +
+        '</div>' +
       '</div>';
 
     g = {
@@ -200,7 +252,10 @@ RS.taskGames.fishing = (function () {
     });
 
     updateHud();
-    spawnFish();
+    /* 开局先放两条，玩家不用干等 */
+    spawnOne();
+    window.setTimeout(function () { spawnOne(); }, 420);
+    scheduleSpawn();
     g.raf = window.requestAnimationFrame(frame);
   }
 

@@ -1,5 +1,6 @@
 /* ============================================================
- * 界面工具：屏幕切换、顶部信息栏、浮动提示、加分动画、确认弹窗。
+ * 界面工具：屏幕切换、顶部信息栏、提示条、加分动画、
+ * 星星迸发、确认弹窗、音效联动。
  * ============================================================ */
 window.RS = window.RS || {};
 
@@ -23,7 +24,6 @@ RS.ui = (function () {
       screens[i].classList.toggle('is-active', screens[i].id === screenId);
     }
     currentScreen = screenId;
-    // 离开任务屏时确保小游戏已停止
     if (screenId !== 'screen-task' && RS.tasks && RS.tasks.stopCurrent) {
       RS.tasks.stopCurrent();
     }
@@ -42,30 +42,32 @@ RS.ui = (function () {
     $('#hudName').textContent = s.name || '—';
     $('#hudRole').textContent = role ? role.name : '—';
     $('#hudTasks').textContent = String(s.tasksCompleted);
+    var logo = $('#hudLogo');
+    if (logo && !logo.innerHTML) { logo.innerHTML = RS.icons.get('sub'); }
+
     var gear = RS.state.gearList();
     var gearEl = $('#hudGear');
     if (!gear.length) {
-      gearEl.textContent = '空空的';
+      gearEl.innerHTML = '<span class="gear-chip gear-chip--empty">还没有装备</span>';
     } else {
       gearEl.innerHTML = gear.map(function (g) {
         return '<span class="gear-chip">' + RS.icons.get(g.item.icon, 'icon--chip') +
-          g.item.name + (g.count > 1 ? ' ×' + g.count : '') + '</span>';
+          g.item.name + (g.count > 1 ? '×' + g.count : '') + '</span>';
       }).join('');
     }
     if (s.mealBonus > 0) {
-      gearEl.innerHTML += '<span class="gear-chip gear-chip--meal">🍽️ 能量 +' + s.mealBonus + '</span>';
+      gearEl.innerHTML += '<span class="gear-chip gear-chip--meal">🍽️ 能量+' + s.mealBonus + '</span>';
     }
     setScoreDisplay(s.score);
   }
 
-  /* 积分数字：变化时跳动一下，让孩子看得见 */
+  /* 积分数字：变化时跳一下 */
   var shownScore = 0;
   function setScoreDisplay(value, animate) {
     var node = $('#hudScore');
     if (!node) { return; }
     if (animate && value !== shownScore) {
       node.classList.remove('is-bump');
-      // 强制重排以便重复触发动画
       void node.offsetWidth;
       node.classList.add('is-bump');
     }
@@ -73,10 +75,9 @@ RS.ui = (function () {
     node.textContent = String(value);
   }
 
-  /* ---------------- 浮动提示 ---------------- */
+  /* ---------------- 提示条 ---------------- */
   function toast(message, kind, ms) {
     var wrap = $('#toastWrap');
-    // 最多同时显示 3 条，免得盖住界面
     while (wrap.children.length >= 3) { wrap.removeChild(wrap.firstChild); }
     var t = el('div', 'toast toast--' + (kind || 'info'), message);
     wrap.appendChild(t);
@@ -95,16 +96,81 @@ RS.ui = (function () {
     layer.appendChild(node);
     window.setTimeout(function () {
       if (node.parentNode) { node.parentNode.removeChild(node); }
-    }, 1100);
+    }, 1200);
   }
 
-  /* 从某个元素中心飘出 */
   function floatFromEl(text, target, kind) {
+    if (!target) { return; }
     var r = target.getBoundingClientRect();
     floatText(text, r.left + r.width / 2, r.top + r.height / 2, kind);
   }
 
-  /* ---------------- 确认弹窗（二次确认） ---------------- */
+  /* ---------------- 星星 / 泡泡迸发 ---------------- */
+  var SPARK_COLORS = ['#ffd166', '#ff9aa2', '#8ce0c0', '#9be3ff', '#ffffff'];
+
+  function burst(x, y, count, spread) {
+    var layer = $('#fxLayer');
+    count = count || 10;
+    spread = spread || 120;
+    for (var i = 0; i < count; i++) {
+      var p = el('span', 'spark');
+      var angle = (Math.PI * 2 * i) / count + Math.random() * 0.6;
+      var dist = spread * (0.5 + Math.random() * 0.8);
+      var size = 8 + Math.random() * 12;
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.background = SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)];
+      p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      p.style.setProperty('--dy', (Math.sin(angle) * dist - 30) + 'px');
+      p.style.animationDelay = (Math.random() * 0.1) + 's';
+      layer.appendChild(p);
+      (function (node) {
+        window.setTimeout(function () {
+          if (node.parentNode) { node.parentNode.removeChild(node); }
+        }, 1000);
+      })(p);
+    }
+  }
+
+  function burstFromEl(target, count, spread) {
+    if (!target) { return; }
+    var r = target.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, count || 10, spread);
+  }
+
+  /* 大庆祝：从屏幕上方落下彩色小圆 */
+  function celebrate(count) {
+    var layer = $('#fxLayer');
+    count = count || 22;
+    for (var i = 0; i < count; i++) {
+      var p = el('span', 'confetti');
+      p.style.left = (Math.random() * 100) + 'vw';
+      p.style.background = SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)];
+      p.style.animationDelay = (Math.random() * 0.5) + 's';
+      p.style.animationDuration = (1.4 + Math.random() * 1) + 's';
+      layer.appendChild(p);
+      (function (node) {
+        window.setTimeout(function () {
+          if (node.parentNode) { node.parentNode.removeChild(node); }
+        }, 2800);
+      })(p);
+    }
+  }
+
+  /* ---------------- 步骤指示器（救援任务用） ---------------- */
+  function stepsHtml(labels, active) {
+    return '<ol class="steps">' + labels.map(function (label, i) {
+      var cls = 'steps__item';
+      if (i + 1 < active) { cls += ' is-done'; }
+      if (i + 1 === active) { cls += ' is-active'; }
+      return '<li class="' + cls + '"><span class="steps__no">' + (i + 1 < active ? '✓' : (i + 1)) + '</span>' +
+        '<span class="steps__text">' + label + '</span></li>';
+    }).join('') + '</ol>';
+  }
+
+  /* ---------------- 确认弹窗 ---------------- */
   var modalHandler = null;
   function confirmBox(title, text, onOk, okLabel) {
     $('#modalTitle').textContent = title;
@@ -148,6 +214,42 @@ RS.ui = (function () {
     }
   }
 
+  /* ---------------- 全局音效 & 按下反馈 ---------------- */
+  function initSoundBindings() {
+    // 第一次触摸/点击时唤醒音频（浏览器自动播放策略）
+    var wake = function () {
+      RS.sound.warmUp();
+      document.removeEventListener('pointerdown', wake);
+    };
+    document.addEventListener('pointerdown', wake);
+
+    // 所有普通按钮都有点击音
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.btn') : null;
+      if (btn && !btn.disabled) { RS.sound.play('click'); }
+    }, true);
+
+    // 声音开关（顶部信息栏和开始界面各有一个，状态保持同步）
+    var toggles = document.querySelectorAll('[data-sound-toggle]');
+    function paint() {
+      var on = RS.sound.isOn();
+      for (var i = 0; i < toggles.length; i++) {
+        toggles[i].textContent = on ? '🔊 声音开' : '🔇 声音关';
+        toggles[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        toggles[i].classList.toggle('is-off', !on);
+      }
+    }
+    for (var i = 0; i < toggles.length; i++) {
+      toggles[i].addEventListener('click', function () {
+        RS.sound.toggle();
+        paint();
+        toast(RS.sound.isOn() ? '声音打开了 🔊' : '声音关掉了 🔇', 'info', 1400);
+      });
+    }
+    RS.sound.onChange(paint);
+    paint();
+  }
+
   /* ---------------- 小工具 ---------------- */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -178,8 +280,10 @@ RS.ui = (function () {
     show: show, screen: screen,
     refreshHud: refreshHud, setScoreDisplay: setScoreDisplay,
     toast: toast, floatText: floatText, floatFromEl: floatFromEl,
+    burst: burst, burstFromEl: burstFromEl, celebrate: celebrate,
+    stepsHtml: stepsHtml,
     confirm: confirmBox, closeModal: closeModal,
-    initModal: initModal, initBubbles: initBubbles,
+    initModal: initModal, initBubbles: initBubbles, initSoundBindings: initSoundBindings,
     randInt: randInt, pick: pick, shuffle: shuffle,
     roleCardHtml: roleCardHtml
   };

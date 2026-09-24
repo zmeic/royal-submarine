@@ -1,9 +1,9 @@
 /* ============================================================
- * 任务三：海洋救援（三步小游戏）
- *  第一步 轻轻靠近动物
- *  第二步 选择正确的工具
- *  第三步 在绿色区域按下完成救援
- * 三步都做对 +10 分。
+ * 任务三：海洋救援（三步）
+ *   第 1 步 轻轻靠近动物
+ *   第 2 步 选择正确的工具（选错还能再试，不会直接结束）
+ *   第 3 步 在绿色区域按下完成救援
+ * 三步做完 +10 分。
  * ============================================================ */
 window.RS = window.RS || {};
 RS.taskGames = RS.taskGames || {};
@@ -11,20 +11,26 @@ RS.taskGames = RS.taskGames || {};
 RS.taskGames.rescue = (function () {
   var cfg = RS.config.tasks.rescue;
   var ui = RS.ui;
+  var STEP_LABELS = ['靠近', '选工具', '救援'];
 
   var g = null;
 
-  /* ---------- 第一步：靠近 ---------- */
+  function header(step, tip) {
+    return ui.stepsHtml(STEP_LABELS, step) +
+      '<p class="step__now"><span class="step__now-tag">现在要做</span>' + tip + '</p>';
+  }
+
+  /* ---------- 第 1 步：靠近 ---------- */
   function renderApproach() {
     g.stepEl.innerHTML =
-      '<h3 class="step__title">第 1 步 · 轻轻靠近' + g.animal.name + '</h3>' +
-      '<p class="step__hint">动作要轻，不要吓到它。点 ' + cfg.approachClicks + ' 次慢慢靠近。</p>' +
+      header(1, '点按钮慢慢游过去，动作要轻') +
       '<div class="approach">' +
-        '<div class="approach__track"><span class="approach__fill" id="apFill"></span></div>' +
         '<div class="approach__row">' +
-          '<span class="approach__diver">' + RS.icons.get('diver', 'icon--scene') + '</span>' +
+          '<span class="approach__diver" id="apDiver">' + RS.icons.get('diver', 'icon--scene') + '</span>' +
+          '<span class="approach__line"><i id="apFill"></i></span>' +
           '<span class="approach__animal" id="apAnimal">' + RS.icons.get(g.animal.icon, 'icon--scene-lg') + '</span>' +
         '</div>' +
+        '<p class="approach__trouble">' + g.animal.name + '：' + g.animal.trouble + '</p>' +
       '</div>' +
       '<button class="btn btn--primary btn--xl" type="button" data-rescue="approach">🤿 轻轻靠近</button>';
     updateApproach();
@@ -33,31 +39,34 @@ RS.taskGames.rescue = (function () {
   function updateApproach() {
     var pct = Math.round(g.approach / cfg.approachClicks * 100);
     var fill = document.getElementById('apFill');
-    var animal = document.getElementById('apAnimal');
+    var diver = document.getElementById('apDiver');
     if (fill) { fill.style.width = pct + '%'; }
-    if (animal) { animal.style.transform = 'translateX(' + (-pct * 0.5) + 'px)'; }
+    if (diver) { diver.style.transform = 'translateX(' + (pct * 0.9) + '%)'; }
   }
 
   function onApproach() {
-    if (g.step !== 1) { return; }          // 已经进入下一步就忽略多余的点击
+    if (g.step !== 1) { return; }
     g.approach += 1;
     updateApproach();
+    RS.sound.play('step');
     if (g.approach >= cfg.approachClicks) {
-      g.step = 1.5;                        // 过渡中，防止连点重复渲染
-      ui.toast('靠近成功！它没有被吓跑～', 'good', 1500);
+      g.step = 1.5;
+      ui.toast('靠近成功！它没有被吓跑～', 'good', 1400);
       window.setTimeout(function () {
         if (g) { g.step = 2; renderTools(); }
       }, 500);
     }
   }
 
-  /* ---------- 第二步：选工具 ---------- */
+  /* ---------- 第 2 步：选工具 ---------- */
   function renderTools() {
     var tools = ui.shuffle(cfg.tools);
     g.stepEl.innerHTML =
-      '<h3 class="step__title">第 2 步 · 选择正确的工具</h3>' +
-      '<p class="step__hint">' + g.animal.name + '：' + g.animal.trouble + '（还可以选 ' +
-        g.toolTries + ' 次）</p>' +
+      header(2, '挑一样能帮到它的工具') +
+      '<div class="trouble-card">' +
+        '<span class="trouble-card__art">' + RS.icons.get(g.animal.icon, 'icon--scene') + '</span>' +
+        '<p class="trouble-card__text" id="troubleText">' + g.animal.name + '：' + g.animal.trouble + '</p>' +
+      '</div>' +
       '<div class="tool-row">' +
         tools.map(function (t) {
           return '<button class="tool" type="button" data-rescue="tool" data-tool="' + t.id + '">' +
@@ -73,48 +82,43 @@ RS.taskGames.rescue = (function () {
     if (g.step !== 2) { return; }
     if (toolId === g.animal.tool) {
       btn.classList.add('is-right');
-      ui.toast('工具选对了！', 'good', 1500);
-      g.step = 3;
-      window.setTimeout(function () { if (g) { renderTiming(); } }, 600);
+      g.step = 2.5;
+      RS.sound.play('step');
+      ui.burstFromEl(btn, 8);
+      ui.toast('工具选对了！', 'good', 1400);
+      window.setTimeout(function () { if (g) { g.step = 3; renderTiming(); } }, 700);
       return;
     }
+    /* 选错不结束，只是换一个再试 */
     btn.classList.add('is-wrong');
     btn.disabled = true;
-    g.toolTries -= 1;
-    if (g.toolTries > 0) {
-      ui.toast('这个工具不太合适，再想一想～', 'warn', 2000);
-      var hint = g.stepEl.querySelector('.step__hint');
-      if (hint) {
-        hint.textContent = g.animal.name + '：' + g.animal.trouble + '（还可以选 ' + g.toolTries + ' 次）';
-      }
-      return;
+    g.toolWrong += 1;
+    RS.sound.play('soft');
+    var text = document.getElementById('troubleText');
+    if (text) {
+      text.classList.remove('is-hint');
+      void text.offsetWidth;
+      text.classList.add('is-hint');
     }
-    fail('工具没有选对，' + g.animal.name + '有点害怕，游走了。别灰心，下次记住：' +
-      g.animal.trouble + ' 要用「' + toolName(g.animal.tool) + '」。');
+    ui.toast('这个好像用不上，再看看它怎么了～', 'warn', 2000);
   }
 
-  function toolName(id) {
-    var n = id;
-    cfg.tools.forEach(function (t) { if (t.id === id) { n = t.name; } });
-    return n;
-  }
-
-  /* ---------- 第三步：时机 ---------- */
+  /* ---------- 第 3 步：时机 ---------- */
   function renderTiming() {
     var zone = cfg.zoneWidth + (RS.state.has('suit') ? cfg.suitExtraZone : 0);
-    g.zoneStart = ui.randInt(10, Math.max(10, 90 - zone));
+    g.zoneStart = ui.randInt(8, Math.max(8, 92 - zone));
     g.zoneWidth = zone;
     g.markerPos = 0;
     g.markerDir = 1;
 
     g.stepEl.innerHTML =
-      '<h3 class="step__title">第 3 步 · 在绿色区域完成救援</h3>' +
-      '<p class="step__hint">小滑块来回移动，在绿色区域里按下按钮（还有 ' + g.timingTries + ' 次机会）</p>' +
+      header(3, '小滑块进到绿色区域时按下按钮') +
       '<div class="timing">' +
         '<div class="timing__bar" id="tmBar">' +
           '<span class="timing__zone" id="tmZone"></span>' +
           '<span class="timing__marker" id="tmMarker"></span>' +
         '</div>' +
+        '<p class="timing__tries" id="tmTries"></p>' +
       '</div>' +
       '<button class="btn btn--gold btn--xl" type="button" data-rescue="timing">✨ 完成救援！</button>';
 
@@ -122,8 +126,19 @@ RS.taskGames.rescue = (function () {
     zoneEl.style.left = g.zoneStart + '%';
     zoneEl.style.width = g.zoneWidth + '%';
     g.markerEl = document.getElementById('tmMarker');
+    g.triesEl = document.getElementById('tmTries');
+    paintTries();
     g.last = 0;
     g.raf = window.requestAnimationFrame(tick);
+  }
+
+  function paintTries() {
+    if (!g.triesEl) { return; }
+    var hearts = '';
+    for (var i = 0; i < cfg.timingTries; i++) {
+      hearts += '<span class="try' + (i < g.timingTries ? '' : ' is-used') + '">💛</span>';
+    }
+    g.triesEl.innerHTML = '还有机会：' + hearts;
   }
 
   function tick(now) {
@@ -131,7 +146,7 @@ RS.taskGames.rescue = (function () {
     if (!g.last) { g.last = now; }
     var dt = Math.min(0.05, (now - g.last) / 1000);
     g.last = now;
-    g.markerPos += g.markerDir * 45 * dt;   // 每秒 45%
+    g.markerPos += g.markerDir * 45 * dt;   // 每秒 45%，儿童能跟上
     if (g.markerPos >= 100) { g.markerPos = 100; g.markerDir = -1; }
     if (g.markerPos <= 0) { g.markerPos = 0; g.markerDir = 1; }
     if (g.markerEl) { g.markerEl.style.left = g.markerPos + '%'; }
@@ -147,38 +162,50 @@ RS.taskGames.rescue = (function () {
       return;
     }
     g.timingTries -= 1;
+    paintTries();
     if (g.timingTries > 0) {
-      ui.toast('差一点！再看准一点～', 'warn', 1600);
-      var hint = g.stepEl.querySelector('.step__hint');
-      if (hint) { hint.textContent = '小滑块来回移动，在绿色区域里按下按钮（还有 ' + g.timingTries + ' 次机会）'; }
+      RS.sound.play('soft');
+      ui.toast('差一点点！再看准一次～', 'warn', 1500);
       return;
     }
     if (g.raf) { window.cancelAnimationFrame(g.raf); g.raf = 0; }
-    fail('时机没有抓准，' + g.animal.name + '自己挣脱游走了。它没有受伤，下次一定能救到！');
+    fail(g.animal.name + '自己挣脱游走啦，它没有受伤。下次一定能救到！');
   }
 
   /* ---------- 结束 ---------- */
   function succeed() {
     var cb = g.onFinish;
-    var animalName = g.animal.name;
+    var animal = g.animal;
+    var el = g.stepEl;
     var out = {
       success: true,
       points: cfg.points,
-      lines: ['成功救助' + animalName + '：+' + cfg.points + ' 分', '三个步骤全部做对'],
-      message: '救助成功！' + animalName + '绕着你转了一圈，然后开心地游走了。'
+      lines: ['💚 成功救助' + animal.name + ' · +' + cfg.points + ' 分', '三个步骤全部做对'],
+      message: '救助成功！' + animal.name + '绕着你转了一圈，开心地游走了。'
     };
-    var el = g.stepEl;
+    g.step = 4;
     stop();
-    el.innerHTML = '<div class="rescue-done">' + RS.icons.get('star', 'icon--scene-lg') +
-      '<p>救助成功！</p></div>';
-    window.setTimeout(function () { cb(out); }, 700);
+
+    /* 被救动物：恢复 → 转圈 → 游走 */
+    el.innerHTML =
+      '<div class="rescue-done">' +
+        '<span class="rescue-done__animal">' + RS.icons.get(animal.icon, 'icon--scene-lg') + '</span>' +
+        '<span class="rescue-done__star">' + RS.icons.get('sparkle', 'icon--scene') + '</span>' +
+        '<p class="rescue-done__text">救助成功！' + animal.name + '得救啦</p>' +
+      '</div>';
+    RS.sound.play('rescue');
+    ui.celebrate(20);
+    var box = el.querySelector('.rescue-done');
+    ui.burstFromEl(box, 14);
+    window.setTimeout(function () { cb(out); }, 1500);
   }
 
   function fail(msg) {
     var cb = g.onFinish;
-    var out = { success: false, points: 0, lines: ['任务没完成，不加分也不扣分'], message: msg };
+    var out = { success: false, points: 0, lines: ['没关系，不加分也不扣分'], message: msg };
     stop();
-    window.setTimeout(function () { cb(out); }, 400);
+    RS.sound.play('soft');
+    window.setTimeout(function () { cb(out); }, 500);
   }
 
   function stop() {
@@ -193,10 +220,10 @@ RS.taskGames.rescue = (function () {
     area.innerHTML =
       '<div class="game">' +
         '<div class="game__top">' +
-          '<p class="game__goal">🎯 ' + cfg.intro + '</p>' +
-          '<p class="game__helpers">' + (RS.state.has('suit')
-            ? '潜水衣加成：第 3 步的绿色区域更宽。'
-            : '有潜水衣的话，第 3 步会更容易一点。') + '</p>' +
+          '<p class="game__goal">🎯 三步救助海洋动物 · <b>成功 +10 分</b></p>' +
+          '<p class="game__helpers' + (RS.state.has('suit') ? '' : ' game__helpers--none') + '">' +
+            (RS.state.has('suit') ? '🥽 潜水衣加成：最后一步更好按' : '有潜水衣的话，最后一步会更容易') +
+          '</p>' +
         '</div>' +
         '<div class="rescue" id="rescueStep"></div>' +
       '</div>';
@@ -205,7 +232,7 @@ RS.taskGames.rescue = (function () {
       animal: animal,
       step: 1,
       approach: 0,
-      toolTries: cfg.toolTries,
+      toolWrong: 0,
       timingTries: cfg.timingTries,
       raf: 0,
       last: 0,

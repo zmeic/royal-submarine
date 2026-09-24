@@ -1,5 +1,5 @@
 /* ============================================================
- * 基础层：颜色变量、排版、海洋背景、图标尺寸
+ * 基础层：颜色变量、排版、海洋背景、图标尺寸、特效粒子
  * ============================================================ */
 :root {
   --deep:      #052e4a;
@@ -10,53 +10,56 @@
   --foam:      #cfefff;
   --sand:      #f6e2b3;
   --gold:      #ffc34d;
-  --gold-dark: #e0902f;
+  --gold-dark: #d98c1f;
   --coral:     #ff7a6b;
   --green:     #2fc98a;
+  --green-dk:  #0f7a53;
   --purple:    #8c7ae6;
   --ink:       #0d3149;
-  --ink-soft:  #38637d;
+  --ink-soft:  #3d6b86;
   --white:     #ffffff;
 
   --radius:    18px;
   --radius-lg: 28px;
-  --shadow:    0 10px 26px rgba(4, 38, 63, .22);
+  --shadow:    0 12px 30px rgba(4, 38, 63, .25);
   --shadow-sm: 0 4px 12px rgba(4, 38, 63, .18);
 
   --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
           system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* 触摸目标最小尺寸（儿童手指） */
+  --tap: 52px;
 }
 
 * { box-sizing: border-box; }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-}
+html, body { margin: 0; padding: 0; min-height: 100%; }
 
 body {
   font-family: var(--font);
-  font-size: 18px;
+  font-size: clamp(16px, 1.15vw + 12px, 19px);
   line-height: 1.6;
   color: var(--ink);
-  background: linear-gradient(180deg, #0e88c4 0%, #075b8e 45%, #042b46 100%);
+  background: #042b46;   /* 真正的渐变画在 .ocean-bg 上，页面再长也不会露白 */
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
 }
 
 h1, h2, h3 { margin: 0 0 .4em; line-height: 1.25; }
 p { margin: 0 0 .7em; }
-ul { margin: 0; padding: 0; list-style: none; }
-strong { color: var(--gold-dark); }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+strong, b { color: var(--gold-dark); }
+button, input { font-family: inherit; }
+img { max-width: 100%; }
+
+/* 可点击元素在触摸屏上不要有 300ms 延迟 */
+button, .task-card, .zone, .tool, .room, .fish { touch-action: manipulation; }
 
 /* ---------------- 海洋背景 ---------------- */
 .ocean-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: linear-gradient(180deg, #0e88c4 0%, #075b8e 45%, #042b46 100%);
 }
 .ocean-bg__light {
   position: absolute;
@@ -73,9 +76,7 @@ strong { color: var(--gold-dark); }
   to   { transform: translateX(3%) skewX(2deg); }
 }
 .ocean-bg__waves {
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: 90px;
+  position: absolute; left: 0; right: 0; top: 0; height: 90px;
   background:
     radial-gradient(60px 26px at 40px 0, rgba(255,255,255,.28), transparent 70%) repeat-x,
     radial-gradient(70px 30px at 120px 8px, rgba(255,255,255,.18), transparent 70%) repeat-x;
@@ -89,9 +90,7 @@ strong { color: var(--gold-dark); }
 }
 .ocean-bg__bubbles { position: absolute; inset: 0; }
 .bubble {
-  position: absolute;
-  bottom: -60px;
-  border-radius: 50%;
+  position: absolute; bottom: -60px; border-radius: 50%;
   background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.9), rgba(207,239,255,.25) 60%, rgba(207,239,255,0) 70%);
   border: 1px solid rgba(255,255,255,.35);
   animation-name: bubbleUp;
@@ -107,48 +106,74 @@ strong { color: var(--gold-dark); }
 
 /* ---------------- 图标尺寸 ---------------- */
 .icon { display: block; width: 100%; height: 100%; }
-.icon--chip   { width: 22px; height: 22px; display: inline-block; vertical-align: -5px; margin-right: 4px; }
-.icon--mini   { width: 42px; height: 42px; }
-.icon--role   { width: 78px; height: 78px; }
-.icon--slot   { width: 62px; height: 62px; }
-.icon--room   { width: 44px; height: 44px; }
-.icon--scene  { width: 62px; height: 62px; }
-.icon--scene-lg { width: 96px; height: 96px; }
-.icon--shop   { width: 76px; height: 76px; }
-.icon--task   { width: 86px; height: 86px; }
-.icon--tool   { width: 58px; height: 58px; }
-.icon--zone   { width: 54px; height: 54px; }
-.icon--fish   { width: 100%; height: auto; }
-.icon--hero   { width: 190px; height: 190px; }
-.icon--result { width: 96px; height: 96px; }
+.icon--img { object-fit: contain; }
+.icon--chip     { width: 22px; height: 22px; display: inline-block; vertical-align: -5px; margin-right: 4px; }
+.icon--mini     { width: 46px; height: 46px; }
+.icon--role     { width: clamp(64px, 12vw, 84px); height: clamp(64px, 12vw, 84px); }
+.icon--slot     { width: clamp(54px, 11vw, 68px); height: clamp(54px, 11vw, 68px); }
+.icon--room     { width: 46px; height: 46px; }
+.icon--scene    { width: clamp(48px, 9vw, 66px); height: clamp(48px, 9vw, 66px); }
+.icon--scene-lg { width: clamp(72px, 14vw, 104px); height: clamp(72px, 14vw, 104px); }
+.icon--shop     { width: clamp(60px, 11vw, 80px); height: clamp(60px, 11vw, 80px); }
+.icon--task     { width: clamp(64px, 13vw, 92px); height: clamp(64px, 13vw, 92px); }
+.icon--tool     { width: clamp(48px, 10vw, 62px); height: clamp(48px, 10vw, 62px); }
+.icon--zone     { width: clamp(44px, 9vw, 60px); height: clamp(44px, 9vw, 60px); }
+.icon--fish     { width: 100%; height: auto; }
+.icon--hero     { width: clamp(130px, 34vw, 200px); height: clamp(130px, 34vw, 200px); }
+.icon--result   { width: clamp(74px, 18vw, 104px); height: clamp(74px, 18vw, 104px); }
 
-/* ---------------- 特效层：飘字 ---------------- */
-.fx-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  pointer-events: none;
-}
+/* ---------------- 特效层 ---------------- */
+.fx-layer { position: fixed; inset: 0; z-index: 90; pointer-events: none; overflow: hidden; }
+
 .float-text {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-size: 30px;
-  font-weight: 800;
+  font-size: clamp(26px, 5vw, 34px);
+  font-weight: 900;
   color: var(--white);
   text-shadow: 0 2px 0 #0a5f8f, 0 6px 14px rgba(0,0,0,.35);
-  animation: floatUp 1.05s ease-out forwards;
+  animation: floatUp 1.15s cubic-bezier(.2,.8,.3,1) forwards;
   white-space: nowrap;
 }
-.float-text--rare  { color: #fff0b8; font-size: 36px; }
+.float-text--rare  { color: #fff3c4; font-size: clamp(30px, 6vw, 42px); text-shadow: 0 2px 0 #b47407, 0 0 22px #ffd166; }
 .float-text--bonus { color: #d6ffe9; }
-.float-text--cost  { color: #ffd7d2; }
+.float-text--cost  { color: #ffd7d2; font-size: clamp(20px, 4vw, 26px); }
 @keyframes floatUp {
-  0%   { transform: translate(-50%, -50%) scale(.6); opacity: 0; }
-  25%  { transform: translate(-50%, -80%) scale(1.15); opacity: 1; }
-  100% { transform: translate(-50%, -190%) scale(1); opacity: 0; }
+  0%   { transform: translate(-50%, -50%) scale(.5); opacity: 0; }
+  22%  { transform: translate(-50%, -85%) scale(1.25); opacity: 1; }
+  100% { transform: translate(-50%, -200%) scale(1); opacity: 0; }
 }
 
-/* 尊重“减少动画”偏好 */
+/* 星星迸发 */
+.spark {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: sparkOut .85s ease-out forwards;
+  box-shadow: 0 0 10px rgba(255,255,255,.7);
+}
+@keyframes sparkOut {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.35); }
+}
+
+/* 从上方落下的彩色小圆 */
+.confetti {
+  position: absolute;
+  top: -24px;
+  width: 12px; height: 12px;
+  border-radius: 4px;
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(540deg); opacity: .2; }
+}
+
+/* 尊重"减少动画"偏好 */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .001s !important;

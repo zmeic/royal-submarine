@@ -1,10 +1,7 @@
 /* ============================================================
  * 任务调度与结算：
- *  - 任务地点与距离
- *  - 任务选择界面
- *  - 启动 / 停止小游戏
- *  - 积分结算（身份奖励、粮食加成、装备损坏）
- *  - 结果界面
+ *  任务地点与距离 / 任务选择 / 启动小游戏 /
+ *  积分结算（身份奖励、粮食加成、装备损坏）/ 结果界面
  * ============================================================ */
 window.RS = window.RS || {};
 
@@ -13,9 +10,23 @@ RS.tasks = (function () {
   var ui = RS.ui;
   var ORDER = ['fishing', 'treasure', 'rescue'];
 
-  var current = null;      // 正在进行的小游戏模块
+  var current = null;
   var currentId = null;
   var dist = {};
+
+  /* 装备坏掉时的轻松说法（随机一条，不要让孩子有挫败感） */
+  var BREAK_LINES = {
+    hook: [
+      '被一条大鱼拽弯啦',
+      '挂在珊瑚上拉直了',
+      '用久了有点卷边'
+    ],
+    spear: [
+      '弹簧松掉了',
+      '被海龟当成玩具啃了一口',
+      '用久了有点松'
+    ]
+  };
 
   function rollDistances() {
     ORDER.forEach(function (id) {
@@ -24,15 +35,17 @@ RS.tasks = (function () {
   }
 
   function fuzzyDistance(d) {
-    if (d < 1000) { return '很近，一会儿就到'; }
-    if (d < 2200) { return '有点远，要开一段'; }
-    return '很远，要开好久';
+    if (d < 1000) { return '很近'; }
+    if (d < 2200) { return '有点远'; }
+    return '很远';
   }
 
-  function rewardText(id) {
-    if (id === 'fishing') { return '普通鱼 +2 分 ｜ 稀有鱼 +5 分'; }
-    if (id === 'treasure') { return '找到宝藏 +6 分'; }
-    return '成功救助 +10 分';
+  function rewardChips(id) {
+    if (id === 'fishing') {
+      return '<span class="chip">普通鱼 +2</span><span class="chip chip--gold">稀有鱼 +5</span>';
+    }
+    if (id === 'treasure') { return '<span class="chip chip--gold">宝藏 +6</span>'; }
+    return '<span class="chip chip--gold">救助 +10</span>';
   }
 
   function taskCard(id) {
@@ -44,18 +57,17 @@ RS.tasks = (function () {
       '<div class="task-card__art">' + RS.icons.get(t.icon, 'icon--task') + '</div>' +
       '<h3 class="task-card__name">' + t.name + '</h3>' +
       '<p class="task-card__intro">' + t.intro + '</p>' +
-      '<p class="task-card__reward">🏅 ' + rewardText(id) + '</p>' +
-      '<p class="task-card__dist">📍 距离：' + (isCaptain ? (d + ' 米') : fuzzyDistance(d)) + '</p>' +
+      '<p class="task-card__reward">' + rewardChips(id) + '</p>' +
+      '<p class="task-card__dist">📍 ' + (isCaptain ? (d + ' 米') : fuzzyDistance(d)) + '</p>' +
       '<span class="task-card__go">出发 →</span>' +
       '</article>';
   }
 
   function openSelect() {
     var s = RS.state.get();
-    var isCaptain = s.role === 'captain';
-    ui.$('#taskSelHint').textContent = isCaptain
-      ? '你是船长，可以看到准确距离，完成任务还有 +1 分领航奖励。'
-      : '点一张卡片就出发。（船长才能看到准确距离哦）';
+    ui.$('#taskSelHint').textContent = s.role === 'captain'
+      ? '船长看得到准确距离，完成任务还有 +1 分'
+      : '点一张卡片就出发';
     ui.$('#taskCards').innerHTML = ORDER.map(taskCard).join('');
     ui.show('screen-taskselect');
   }
@@ -66,18 +78,31 @@ RS.tasks = (function () {
     currentId = null;
   }
 
+  var starting = false;
   function startTask(id) {
+    if (starting) { return; }             // 防止快速连点开两局
     var game = RS.taskGames[id];
     var t = cfg.tasks[id];
     if (!game || !t) { return; }
+    starting = true;
+    window.setTimeout(function () { starting = false; }, 400);
+
     stopCurrent();
     current = game;
     currentId = id;
-    ui.$('#taskPlayTitle').textContent = t.name;
+    ui.$('#taskPlayTitle').innerHTML =
+      '<span class="play__icon">' + RS.icons.get(t.icon, 'icon--chip') + '</span>' + t.name;
     var area = ui.$('#taskArea');
     area.innerHTML = '';
     ui.show('screen-task');
-    game.start(area, function (result) { settle(id, result); });
+    RS.sound.play('tap');
+
+    var done = false;
+    game.start(area, function (result) {
+      if (done) { return; }               // 小游戏只结算一次
+      done = true;
+      settle(id, result);
+    });
   }
 
   /* ---------------- 结算 ---------------- */
@@ -88,26 +113,19 @@ RS.tasks = (function () {
     var total = Math.max(0, Math.floor(result.points || 0));
 
     if (result.success) {
-      // 船长领航奖励
       if (s.role === 'captain') {
         total += 1;
-        lines.push('船长领航奖励：+1 分');
+        lines.push('🧑‍✈️ 船长领航奖励 · +1 分');
       }
-      // 粮食加成
       if (s.mealBonus > 0) {
         total += s.mealBonus;
-        lines.push('吃饱了的能量加成：+' + s.mealBonus + ' 分');
+        lines.push('🍽️ 吃饱了的能量 · +' + s.mealBonus + ' 分');
         RS.state.setMealBonus(0);
       }
-    } else {
-      lines.push('任务没完成：不加分，也不扣分');
     }
 
-    // 装备损坏检查
     var broken = checkBreakage(t.usesGear || []);
-    broken.forEach(function (name) {
-      lines.push('⚠️ ' + name + '用旧了，坏掉了');
-    });
+    broken.forEach(function (b) { lines.push('🔧 ' + b.name + b.why + '，回便利店换个新的就好'); });
 
     if (total > 0) { RS.state.addScore(total); }
     RS.state.countTask(!!result.success);
@@ -128,7 +146,8 @@ RS.tasks = (function () {
       if (!RS.state.has(gid)) { return; }
       if (Math.random() < chance) {
         RS.state.removeItem(gid, 1);
-        broken.push(item.name);
+        var why = ui.pick(BREAK_LINES[gid] || ['用久了']);
+        broken.push({ id: gid, name: item.name, icon: item.icon, why: why });
       }
     });
     return broken;
@@ -136,14 +155,16 @@ RS.tasks = (function () {
 
   function showResult(t, result, total, lines, broken) {
     var ok = !!result.success;
-    ui.$('#resultTitle').textContent = ok ? (t.name + ' 完成！') : (t.name + ' 没完成');
-    ui.$('#resultArt').innerHTML = RS.icons.get(ok ? 'star' : 'bubble', 'icon--result');
+    ui.$('#resultTitle').textContent = ok ? (t.name + ' 完成！') : (t.name + ' 没成功');
+    ui.$('#resultArt').innerHTML = ok
+      ? RS.icons.get('star', 'icon--result')
+      : RS.icons.get('wave', 'icon--result');
     ui.$('#resultMsg').textContent = result.message || '';
     ui.$('#resultLines').innerHTML = lines.map(function (l) {
       return '<li>' + l + '</li>';
     }).join('');
     ui.$('#resultScore').innerHTML = total > 0
-      ? '<span class="score-pop">+' + total + ' 分</span>' +
+      ? '<span class="score-pop">+' + total + '</span><span class="score-pop__unit">分</span>' +
         '<span class="score-total">现在一共 ' + RS.state.get().score + ' 分</span>'
       : '<span class="score-total">积分没有变化：' + RS.state.get().score + ' 分</span>';
 
@@ -155,10 +176,21 @@ RS.tasks = (function () {
     ui.refreshHud();
     ui.setScoreDisplay(RS.state.get().score, true);
 
-    if (ok) { ui.toast('任务完成！获得 ' + total + ' 分', 'good'); }
-    else { ui.toast('这次没成功，不扣分，再来一次！', 'warn', 2600); }
-    broken.forEach(function (name) {
-      ui.toast('你的' + name + '坏掉了，回便利店再换一个吧', 'warn', 3200);
+    if (ok) {
+      RS.sound.play('score');
+      ui.celebrate(total >= 10 ? 26 : 16);
+      var pop = ui.$('#resultScore').querySelector('.score-pop');
+      if (pop) { window.setTimeout(function () { ui.burstFromEl(pop, 12); }, 200); }
+    } else {
+      RS.sound.play('soft');
+      ui.toast('没关系，不扣分，再来一次！', 'warn', 2400);
+    }
+
+    broken.forEach(function (b, i) {
+      window.setTimeout(function () {
+        RS.sound.play('broke');
+        ui.toast('🔧 你的' + b.name + b.why + '！回便利店再换一个～', 'warn', 3200);
+      }, 900 + i * 500);
     });
   }
 
@@ -182,7 +214,7 @@ RS.tasks = (function () {
 
     ui.$('#btnAbortTask').addEventListener('click', function () {
       stopCurrent();
-      ui.toast('任务放弃了，不扣分', 'info', 1800);
+      ui.toast('回潜艇啦，不扣分', 'info', 1600);
       ui.show('screen-main');
       RS.submarine.refresh();
     });

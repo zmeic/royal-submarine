@@ -1,7 +1,7 @@
 /* ============================================================
  * 启动与主流程：
- * 开始游戏 → 抽身份 → 起名字 → 进入潜艇 → 选任务 → 小游戏
- * → 得积分 → 便利店 → 换装备 → 回来继续任务（可以一直循环）
+ * 开始 → 抽身份 → 起名 → 进潜艇 → 选任务 → 小游戏
+ * → 得积分 → 便利店 → 换装备 → 回来继续（可循环）
  * ============================================================ */
 window.RS = window.RS || {};
 
@@ -9,11 +9,12 @@ RS.main = (function () {
   var cfg = RS.config;
   var ui = RS.ui;
   var ROLE_IDS = ['captain', 'diver', 'crew'];
-  var drawTimer = null;
+  var drawing = false;
 
   /* ---------------- 开始界面 ---------------- */
   function renderStart() {
     ui.$('#heroArt').innerHTML =
+      '<span class="hero__beam"></span>' +
       RS.icons.get('sub', 'icon--hero') +
       '<span class="hero__fish hero__fish--1">' + RS.icons.get('fish', 'icon--mini') + '</span>' +
       '<span class="hero__fish hero__fish--2">' + RS.icons.get('rareFish', 'icon--mini') + '</span>' +
@@ -24,7 +25,7 @@ RS.main = (function () {
     if (sum) {
       ui.$('#btnContinue').hidden = false;
       tip.hidden = false;
-      tip.textContent = '上次的进度：' + sum.name + '（' + sum.roleName + '）· ' +
+      tip.innerHTML = '上次：<strong>' + sum.name + '</strong>（' + sum.roleName + '）· ' +
         sum.score + ' 分 · 完成 ' + sum.tasksCompleted + ' 个任务';
     } else {
       ui.$('#btnContinue').hidden = true;
@@ -32,7 +33,7 @@ RS.main = (function () {
     }
     if (!RS.state.storageWorks()) {
       tip.hidden = false;
-      tip.textContent = '提示：这个浏览器不能保存进度（刷新后会重新开始），游戏本身照样可以玩。';
+      tip.textContent = '这个浏览器不能保存进度（刷新会重来），但游戏照样能玩。';
     }
   }
 
@@ -40,51 +41,77 @@ RS.main = (function () {
   function renderRoleSlots(activeId) {
     ui.$('#roleSlots').innerHTML = ROLE_IDS.map(function (id) {
       var role = cfg.roles[id];
-      return '<div class="slot' + (id === activeId ? ' is-active' : '') + '">' +
-        RS.icons.get(role.icon, 'icon--slot') +
+      return '<div class="slot' + (id === activeId ? ' is-active' : '') + '" data-slot="' + id + '">' +
+        '<span class="slot__art">' + RS.icons.get(role.icon, 'icon--slot') + '</span>' +
         '<span class="slot__name">' + role.name + '</span>' +
         '</div>';
     }).join('');
   }
 
-  function openRoleScreen() {
+  function resetRoleScreen() {
     renderRoleSlots(null);
     ui.$('#roleResult').hidden = true;
+    ui.$('#roleResult').innerHTML = '';
     ui.$('#btnDrawRole').hidden = false;
     ui.$('#btnRedraw').hidden = true;
     ui.$('#btnRoleNext').hidden = true;
+  }
+
+  function openRoleScreen() {
+    resetRoleScreen();
     ui.show('screen-role');
   }
 
   function drawRole() {
-    if (drawTimer) { return; }
+    if (drawing) { return; }
+    drawing = true;
     ui.$('#btnDrawRole').hidden = true;
     ui.$('#btnRedraw').hidden = true;
     ui.$('#btnRoleNext').hidden = true;
     ui.$('#roleResult').hidden = true;
+    ui.$('#roleSlots').classList.add('is-spinning');
 
+    var picked = ui.pick(ROLE_IDS);          // 真正的随机结果
+    var steps = 15 + ROLE_IDS.indexOf(picked);
     var i = 0;
-    var spins = 12 + ui.randInt(0, 2);
-    drawTimer = window.setInterval(function () {
+
+    function spin() {
       renderRoleSlots(ROLE_IDS[i % ROLE_IDS.length]);
+      RS.sound.play('tick');
       i++;
-      if (i >= spins) {
-        window.clearInterval(drawTimer);
-        drawTimer = null;
-        var picked = ui.pick(ROLE_IDS);      // 真正的随机结果
-        renderRoleSlots(picked);
-        RS.state.setRole(picked);
-        var box = ui.$('#roleResult');
-        box.innerHTML = ui.roleCardHtml(picked, 'role-card--big');
-        box.hidden = false;
-        box.classList.remove('is-pop');
-        void box.offsetWidth;
-        box.classList.add('is-pop');
-        ui.$('#btnRedraw').hidden = false;
-        ui.$('#btnRoleNext').hidden = false;
-        ui.toast('抽到了：' + cfg.roles[picked].name + '！', 'good');
+      if (i >= steps) { land(picked); return; }
+      /* 越转越慢，最后"咔"一下停住 */
+      var t = i / steps;
+      var delay = 60 + Math.pow(t, 3) * 240;
+      window.setTimeout(spin, delay);
+    }
+
+    function land(id) {
+      renderRoleSlots(id);
+      ui.$('#roleSlots').classList.remove('is-spinning');
+      var slot = document.querySelector('.slot[data-slot="' + id + '"]');
+      if (slot) {
+        slot.classList.add('is-landed');
+        ui.burstFromEl(slot, 16, 150);
       }
-    }, 110);
+      RS.sound.play('reveal');
+      ui.celebrate(14);
+      RS.state.setRole(id);
+
+      var box = ui.$('#roleResult');
+      box.innerHTML = ui.roleCardHtml(id, 'role-card--big');
+      box.hidden = false;
+      box.classList.remove('is-pop');
+      void box.offsetWidth;
+      box.classList.add('is-pop');
+
+      ui.$('#btnRedraw').hidden = false;
+      ui.$('#btnRoleNext').hidden = false;
+      ui.toast('抽到了：' + cfg.roles[id].name + '！', 'good');
+      drawing = false;
+    }
+
+    spin();
   }
 
   /* ---------------- 起名字 ---------------- */
@@ -109,6 +136,7 @@ RS.main = (function () {
     if (!name) {
       ui.$('#nameError').hidden = false;
       input.focus();
+      RS.sound.play('soft');
       return;
     }
     ui.$('#nameError').hidden = true;
@@ -120,10 +148,12 @@ RS.main = (function () {
   function enterSubmarine(firstTime) {
     ui.refreshHud();
     ui.show('screen-main');
-    RS.submarine.openRoom('bridge');
+    RS.submarine.openRoom('bridge', true);
     if (firstTime) {
       var s = RS.state.get();
       var role = RS.state.roleInfo();
+      RS.sound.play('reveal');
+      ui.celebrate(16);
       ui.toast('欢迎登艇，' + s.name + ' ' + (role ? role.name : '') + '！', 'good', 3000);
     }
   }
@@ -131,14 +161,14 @@ RS.main = (function () {
   /* ---------------- 重新开始 ---------------- */
   function restart() {
     ui.confirm(
-      '要重新开始游戏吗？',
-      '重新开始会清空名字、身份、积分和所有装备，而且不能恢复。确定吗？',
+      '要重新开始吗？',
+      '名字、身份、积分和装备都会清空，而且不能恢复。',
       function () {
         RS.tasks.stopCurrent();
         RS.state.reset();
         ui.refreshHud();
         renderStart();
-        openRoleScreenReset();
+        resetRoleScreen();
         ui.show('screen-start');
         ui.toast('已经重新开始，可以再抽一次身份啦', 'info', 2600);
       },
@@ -146,19 +176,11 @@ RS.main = (function () {
     );
   }
 
-  function openRoleScreenReset() {
-    renderRoleSlots(null);
-    ui.$('#roleResult').hidden = true;
-    ui.$('#btnDrawRole').hidden = false;
-    ui.$('#btnRedraw').hidden = true;
-    ui.$('#btnRoleNext').hidden = true;
-  }
-
   /* ---------------- 事件绑定 ---------------- */
   function bind() {
     ui.$('#btnNewGame').addEventListener('click', function () {
       if (RS.state.hasSave()) {
-        ui.confirm('开始新游戏？', '上次的进度（积分和装备）会被清空，确定要重新开始吗？', function () {
+        ui.confirm('开始新游戏？', '上次的积分和装备会被清空。', function () {
           RS.state.reset();
           ui.refreshHud();
           renderStart();
@@ -200,7 +222,6 @@ RS.main = (function () {
     ui.$('#btnResultAgain').addEventListener('click', RS.tasks.openSelect);
     ui.$('#btnResultShop').addEventListener('click', RS.shop.open);
 
-    // 所有带 data-goto 的按钮（回到潜艇等）
     var gotos = document.querySelectorAll('[data-goto]');
     for (var i = 0; i < gotos.length; i++) {
       gotos[i].addEventListener('click', function (e) {
@@ -215,23 +236,19 @@ RS.main = (function () {
   function boot() {
     ui.initBubbles();
     ui.initModal();
+    ui.initSoundBindings();
     RS.submarine.render();
     RS.shop.init();
     RS.tasks.init();
     bind();
 
     RS.state.onChange(function () {
-      // 状态一变就同步顶部信息栏（积分、装备、任务数）
       if (RS.state.isReady()) { ui.refreshHud(); }
     });
 
     RS.state.loadFromSave();
     renderStart();
-
-    if (RS.state.isReady()) {
-      // 有存档：留在开始界面，让玩家自己选“继续”还是“新游戏”
-      ui.refreshHud();
-    }
+    if (RS.state.isReady()) { ui.refreshHud(); }
     ui.show('screen-start');
   }
 

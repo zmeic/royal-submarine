@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#075b8e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
 <title>皇家潜艇 · 海底探险小游戏</title>
 <meta name="description" content="《皇家潜艇》儿童网页小游戏第一版原型：抽身份、开潜艇、捕鱼寻宝救援、赚积分换装备。" />
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
@@ -51,6 +53,7 @@
   </div>
   <div class="hud__actions">
     <button class="btn btn--ghost btn--sm" type="button" id="btnHudShop">🛒 便利店</button>
+    <button class="btn btn--ghost btn--sm sound-btn" type="button" data-sound-toggle aria-pressed="true">🔊 声音开</button>
     <button class="btn btn--ghost btn--sm" type="button" id="btnHudRestart">重新开始</button>
   </div>
 </header>
@@ -69,6 +72,8 @@
         <button class="btn btn--primary btn--xl" type="button" id="btnNewGame">开始新游戏</button>
       </div>
       <p class="hero__tip" id="startSaveTip" hidden></p>
+      <p class="hero__foot">做完任务赚积分 · 去便利店换装备 · 再出发探险</p>
+      <button class="btn btn--ghost btn--sm sound-btn" type="button" data-sound-toggle aria-pressed="true">🔊 声音开</button>
     </div>
   </section>
 
@@ -136,7 +141,7 @@
   <section class="screen screen--play" id="screen-task" aria-labelledby="taskPlayTitle">
     <div class="panel panel--wide">
       <div class="play__head">
-        <h2 class="panel__title" id="taskPlayTitle">任务进行中</h2>
+        <h2 class="panel__title panel__title--play" id="taskPlayTitle">任务进行中</h2>
         <button class="btn btn--ghost btn--sm" type="button" id="btnAbortTask">放弃任务</button>
       </div>
       <div class="play__area" id="taskArea"></div>
@@ -196,7 +201,9 @@
 <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
 
 <script src="js/config.js"></script>
+<script src="js/sound.js"></script>
 <script src="js/icons.js"></script>
+<script src="js/art.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>

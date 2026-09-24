@@ -79,7 +79,7 @@ RS.config = {
       id: 'fishing',
       name: '捕鱼任务',
       icon: 'fish',
-      intro: '海里游过一群鱼，点中它们就能捕到！普通鱼 +2 分，金色稀有鱼 +5 分。',
+      intro: '点中游过的鱼就能捕到！',
       goal: '至少捕到 1 条鱼就算完成',
       usesGear: ['hook', 'spear'],
       duration: 30,          // 秒
@@ -96,7 +96,7 @@ RS.config = {
       id: 'treasure',
       name: '寻宝任务',
       icon: 'chest',
-      intro: '海底有 6 片区域，宝箱藏在其中一片。挖错了会告诉你离宝箱有多远。',
+      intro: '宝箱藏在 6 片区域里，挖错会提示远近。',
       goal: '在机会用完前挖到宝箱',
       usesGear: ['hook'],
       zones: 6,
@@ -109,11 +109,11 @@ RS.config = {
       id: 'rescue',
       name: '海洋救援任务',
       icon: 'turtle',
-      intro: '有海洋动物遇到麻烦了！先慢慢靠近，再拿对工具，最后在合适的时机完成救援。',
+      intro: '三步救助遇到麻烦的海洋动物。',
       goal: '三个步骤全部做对',
       usesGear: [],
       approachClicks: 3,
-      toolTries: 2,
+      toolTries: 3,
       timingTries: 3,
       zoneWidth: 30,      // 时机条绿色区域宽度（百分比）
       suitExtraZone: 10,  // 有潜水衣时绿色区域更宽
@@ -141,32 +141,32 @@ RS.config = {
   rooms: [
     {
       id: 'bridge', name: '驾驶区', icon: 'wheel',
-      desc: '这里是船长的位置：大大的方向舵、雷达屏幕和一排闪亮的按钮。从这里出发去任务！',
+      desc: '大方向舵 + 雷达屏，从这里出发去任务！',
       action: 'tasks'
     },
     {
       id: 'view', name: '观景区', icon: 'window',
-      desc: '一整排方形大窗户，外面就是海底世界：珊瑚、小鱼、还有慢慢飘过的水母。',
+      desc: '方形大窗户，外面就是海底世界。',
       action: 'view'
     },
     {
       id: 'dining', name: '餐厅', icon: 'table',
-      desc: '长长的餐桌摆好了：面包、汤、水果和一盘热菜。吃饱了做任务更有劲。',
+      desc: '餐桌上摆好了热菜，吃饱更有劲。',
       action: 'eat'
     },
     {
       id: 'storage', name: '储藏区', icon: 'box',
-      desc: '装备和粮食都堆在这里，旁边就是潜艇便利店的小窗口。',
+      desc: '装备和粮食都放在这儿。',
       action: 'shop'
     },
     {
       id: 'toilet', name: '厕所', icon: 'toilet',
-      desc: '干干净净的小房间，洗手池会冒出一串小泡泡。出发前记得洗手哦。',
+      desc: '洗手池会冒小泡泡，出发前记得洗手。',
       action: 'wash'
     },
     {
       id: 'stage', name: '舞台', icon: 'stage',
-      desc: '彩色的灯光转起来，船员们在这里唱歌跳舞。任务累了就来玩一会儿。',
+      desc: '灯光转起来，上台唱歌跳舞！',
       action: 'show'
     }
   ],
