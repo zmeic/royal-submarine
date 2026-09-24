@@ -220,6 +220,10 @@ RS.main = (function () {
 
     ui.$('#btnGoTasks').addEventListener('click', RS.tasks.openSelect);
     ui.$('#btnGoShop').addEventListener('click', RS.shop.open);
+    ui.$('#btnGoDex').addEventListener('click', function () { RS.collection.open(); });
+    ui.$('#btnHudDex').addEventListener('click', function () { RS.collection.open(); });
+    ui.$('#btnResultDex').addEventListener('click', function () { RS.collection.open(); });
+    ui.$('#btnDexToTasks').addEventListener('click', RS.tasks.openSelect);
     ui.$('#btnHudShop').addEventListener('click', RS.shop.open);
     ui.$('#btnHudRestart').addEventListener('click', restart);
     ui.$('#btnShopToTasks').addEventListener('click', RS.tasks.openSelect);
@@ -243,6 +247,7 @@ RS.main = (function () {
     ui.initSoundBindings();
     RS.submarine.render();
     RS.shop.init();
+    RS.collection.init();
     RS.tasks.init();
     bind();
 
@@ -251,6 +256,8 @@ RS.main = (function () {
     });
 
     RS.state.loadFromSave();
+    /* 老存档可能早就够格拿徽章了，这里补发一次，但不弹卡片打扰 */
+    RS.achievements.check({ silent: true });
     renderStart();
     if (RS.state.isReady()) { ui.refreshHud(); }
     ui.show('screen-start');

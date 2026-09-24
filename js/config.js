@@ -37,6 +37,40 @@ RS.config = {
     }
   },
 
+  /* ---------------- 鱼的种类（图鉴用） ----------------
+   * weight 越大越常见；rare: true 的鱼归到「稀有鱼」一档。
+   * points 不写就用 tasks.fishing 里的 normalPoints / rarePoints。
+   * 颜色会直接画进 SVG，换成孩子的画时在 js/art.js 里写 image 即可。 */
+  species: [
+    { id: 'blue', name: '蓝点鱼', rare: false, weight: 26, pattern: 'plain',
+      body: '#6ed0f0', fin: '#4bb8dd', belly: '#a8e6fb',
+      note: '海里最常见的小鱼，喜欢一大群一起游。' },
+    { id: 'clown', name: '小丑鱼', rare: false, weight: 20, pattern: 'stripe',
+      body: '#ff9a52', fin: '#f2722f', belly: '#ffd6b0', mark: '#fff6e4',
+      note: '橙白条纹，住在软软的海葵里，一点都不怕蜇。' },
+    { id: 'grass', name: '海草鱼', rare: false, weight: 18, pattern: 'plain',
+      body: '#8fd6bd', fin: '#5bb79a', belly: '#d8f3e8',
+      note: '躲在海草里几乎看不见，只有尾巴会露出来。' },
+    { id: 'coral', name: '珊瑚鱼', rare: false, weight: 14, pattern: 'spot',
+      body: '#ff9aa2', fin: '#e8707c', belly: '#ffd6da', mark: '#fff2f3',
+      note: '身上有小圆点，一直绕着珊瑚打转。' },
+    { id: 'puffer', name: '小河豚', rare: false, weight: 10, pattern: 'spot',
+      body: '#ffd45e', fin: '#e8b13c', belly: '#fff3c4', mark: '#6b503a',
+      note: '受惊的时候会鼓成一个球，其实很温柔。' },
+    { id: 'night', name: '夜光鱼', rare: false, weight: 7, pattern: 'stripe',
+      body: '#9d8bdc', fin: '#7a67c0', belly: '#ddd5ff', mark: '#f2f0ff',
+      note: '越深的地方越亮，像会游泳的小夜灯。' },
+    { id: 'gold', name: '黄金鱼', rare: true, weight: 24, pattern: 'plain',
+      body: '#ffd971', fin: '#f5b53c', belly: '#fff3c4',
+      note: '浑身金光闪闪，船长说见到它今天就会顺利。' },
+    { id: 'rainbow', name: '彩虹鱼', rare: true, weight: 14, pattern: 'stripe',
+      body: '#7fe3c8', fin: '#ff9aa2', belly: '#fff0b8', mark: '#9be3ff',
+      note: '每一片鳞的颜色都不一样，游起来像一道小彩虹。' },
+    { id: 'crownfish', name: '皇冠鱼', rare: true, weight: 4, pattern: 'crown', points: 8,
+      body: '#ffe08a', fin: '#f0a93c', belly: '#fff8dc', mark: '#ffd45e',
+      note: '头上有一顶小皇冠，整片海里只有皇家潜艇见过它。' }
+  ],
+
   /* ---------------- 便利店商品 ---------------- */
   shopItems: [
     {
@@ -120,11 +154,14 @@ RS.config = {
       points: 10,
       animals: [
         { id: 'turtle', name: '小海龟', icon: 'turtle',
-          trouble: '被旧渔网缠住了尾巴，动不了。', tool: 'scissors' },
+          trouble: '被旧渔网缠住了尾巴，动不了。', tool: 'scissors',
+          note: '慢吞吞的老朋友，能在海里游上好几十年。' },
         { id: 'whale', name: '小鲸鱼', icon: 'whale',
-          trouble: '游到浅滩上搁浅了，浮不起来。', tool: 'balloon' },
+          trouble: '游到浅滩上搁浅了，浮不起来。', tool: 'balloon',
+          note: '会用歌声跟很远的同伴说话，声音低低的。' },
         { id: 'dolphin', name: '小海豚', icon: 'dolphin',
-          trouble: '鱼鳍被礁石划伤，流血了。', tool: 'medkit' }
+          trouble: '鱼鳍被礁石划伤，流血了。', tool: 'medkit',
+          note: '最爱跟着潜艇跳来跳去，聪明又爱玩。' }
       ],
       tools: [
         { id: 'scissors', name: '安全剪刀', icon: 'scissors', hint: '剪开缠住的东西' },
@@ -136,6 +173,44 @@ RS.config = {
 
   /* 任务地点距离（米）随机范围，船长能看到准确数字 */
   distance: { min: 200, max: 3200 },
+
+  /* ---------------- 成就徽章 ----------------
+   * type 决定用哪个统计值来判断（见 js/achievements.js）：
+   *   fishTotal 捕鱼总数 / fishKinds 鱼图鉴种类 / rareTotal 稀有鱼总数
+   *   treasure 宝藏次数 / animalKinds 救过的动物种类 / animalTotal 救助总数
+   *   tasks 完成任务数 / score 当前积分 / bestCatch 单次捕鱼最多条数
+   *   gearKinds 同时拥有的装备种类 / species:<id> 抓到过某种鱼
+   * need 是达成需要的数量。 */
+  achievements: [
+    { id: 'firstFish', name: '第一条鱼', icon: 'fish', type: 'fishTotal', need: 1,
+      desc: '捕到人生中第一条鱼' },
+    { id: 'fish10', name: '小渔夫', icon: 'fish', type: 'fishTotal', need: 10,
+      desc: '一共捕到 10 条鱼' },
+    { id: 'fish30', name: '捕鱼高手', icon: 'hook', type: 'fishTotal', need: 30,
+      desc: '一共捕到 30 条鱼' },
+    { id: 'bigCatch', name: '大丰收', icon: 'star', type: 'bestCatch', need: 6,
+      desc: '一次捕鱼任务里捕到 6 条鱼' },
+    { id: 'firstRare', name: '闪闪发光', icon: 'rareFish', type: 'rareTotal', need: 1,
+      desc: '捕到第一条稀有鱼' },
+    { id: 'crownFish', name: '皇冠加冕', icon: 'crown', type: 'species:crownfish', need: 1,
+      desc: '捕到传说中的皇冠鱼' },
+    { id: 'fishAll', name: '鱼类图鉴大师', icon: 'chestOpen', type: 'fishKinds', need: 9,
+      desc: '把图鉴里的每一种鱼都捕到一次' },
+    { id: 'firstTreasure', name: '开箱时刻', icon: 'chest', type: 'treasure', need: 1,
+      desc: '第一次挖到宝藏' },
+    { id: 'treasure5', name: '寻宝猎人', icon: 'chestOpen', type: 'treasure', need: 5,
+      desc: '一共挖到 5 次宝藏' },
+    { id: 'firstRescue', name: '海洋朋友', icon: 'turtle', type: 'animalTotal', need: 1,
+      desc: '第一次成功救助海洋动物' },
+    { id: 'rescueAll', name: '海洋守护者', icon: 'sparkle', type: 'animalKinds', need: 3,
+      desc: '小海龟、小鲸鱼、小海豚都救过' },
+    { id: 'tasks10', name: '出勤十次', icon: 'wheel', type: 'tasks', need: 10,
+      desc: '完成 10 个任务' },
+    { id: 'score50', name: '积分小富翁', icon: 'star', type: 'score', need: 50,
+      desc: '身上同时有 50 分' },
+    { id: 'gearFull', name: '全副武装', icon: 'suit', type: 'gearKinds', need: 4,
+      desc: '同时拥有潜水衣、鱼钩、鱼枪、氧气瓶' }
+  ],
 
   /* ---------------- 潜艇房间（顺序按原画的分区：上层左→右，下层左→右） ---------------- */
   rooms: [

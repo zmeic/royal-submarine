@@ -22,6 +22,8 @@ RS.taskGames.fishing = (function () {
     if (!g || !g.running) { return; }
     var size = tankSize();
     var rare = Math.random() < g.rareChance;
+    var sp = RS.collection.randomSpecies(rare);
+    var points = RS.collection.pointsFor(sp);
 
     /* 大小略有差异，看起来更自然 */
     var base = rare ? 128 : 104;
@@ -38,11 +40,11 @@ RS.taskGames.fishing = (function () {
 
     var node = ui.el('button', 'fish' + (rare ? ' fish--rare' : '') + (g.bigHit ? ' fish--big' : ''));
     node.type = 'button';
-    node.setAttribute('aria-label', rare ? '稀有鱼，点击捕捉，5 分' : '普通鱼，点击捕捉，2 分');
+    node.setAttribute('aria-label', sp.name + '，点击捕捉，' + points + ' 分');
     node.innerHTML =
       (rare ? '<span class="fish__glow"></span>' : '') +
-      '<span class="fish__body">' + RS.icons.get(rare ? 'rareFish' : 'fish', 'icon--fish') + '</span>' +
-      (rare ? '<span class="fish__tag">稀有</span>' : '');
+      '<span class="fish__body">' + RS.icons.species(sp, 'icon--fish') + '</span>' +
+      (rare ? '<span class="fish__tag">' + sp.name + '</span>' : '');
     node.style.width = fishW + 'px';
 
     var fish = {
@@ -53,7 +55,8 @@ RS.taskGames.fishing = (function () {
       speed: speed,
       w: fishW,
       rare: rare,
-      points: rare ? cfg.rarePoints : cfg.normalPoints,
+      species: sp,
+      points: points,
       phase: Math.random() * Math.PI * 2,
       wobble: 8 + Math.random() * 10,     // 上下摆动幅度
       wobbleSpeed: 1.4 + Math.random(),
@@ -83,6 +86,10 @@ RS.taskGames.fishing = (function () {
     if (!fish.alive || !g.running) { return; }
     fish.alive = false;
     g.caught.push(fish.rare ? 'rare' : 'normal');
+    g.bySpecies[fish.species.id] = (g.bySpecies[fish.species.id] || 0) + 1;
+    if (!RS.state.fishCaught(fish.species.id) && !g.firstTime[fish.species.id]) {
+      g.firstTime[fish.species.id] = true;   // 图鉴上的新鱼，结算时会单独说一句
+    }
     g.points += fish.points;
     fish.el.classList.add('is-caught');
     fish.el.disabled = true;
@@ -95,7 +102,7 @@ RS.taskGames.fishing = (function () {
     }
 
     if (fish.rare) {
-      ui.floatText('+' + fish.points + ' 稀有鱼！', x, y, 'rare');
+      ui.floatText('+' + fish.points + ' ' + fish.species.name + '！', x, y, 'rare');
       ui.burst(x, y, 16, 160);
       RS.sound.play('rare');
       flashTank();
@@ -163,13 +170,29 @@ RS.taskGames.fishing = (function () {
     if (!g || !g.running) { return; }
     var rare = g.caught.filter(function (k) { return k === 'rare'; }).length;
     var normal = g.caught.length - rare;
+    var newKinds = Object.keys(g.firstTime);
+    var bySpecies = g.bySpecies;
     var result = {
       success: g.caught.length > 0,
       points: g.points,
-      lines: []
+      lines: [],
+      /* 交给 js/tasks/index.js 写进图鉴 */
+      collect: { fish: bySpecies, catchTotal: g.caught.length }
     };
-    if (normal > 0) { result.lines.push('普通鱼 ' + normal + ' 条 · 每条 ' + cfg.normalPoints + ' 分'); }
-    if (rare > 0) { result.lines.push('✨ 稀有鱼 ' + rare + ' 条 · 每条 ' + cfg.rarePoints + ' 分'); }
+    /* 按种类报账：「小丑鱼 ×2 · 4 分」，孩子能对上图鉴里的名字 */
+    RS.config.species.forEach(function (sp) {
+      var n = bySpecies[sp.id];
+      if (!n) { return; }
+      var each = RS.collection.pointsFor(sp);
+      result.lines.push((sp.rare ? '✨ ' : '') + sp.name + ' ×' + n + ' · ' + (each * n) + ' 分');
+    });
+    /* 新进图鉴的鱼合成一行，按图鉴顺序排，不要刷屏 */
+    if (newKinds.length) {
+      var names = RS.config.species.filter(function (sp) {
+        return newKinds.indexOf(sp.id) >= 0;
+      }).map(function (sp) { return sp.name; });
+      result.lines.push('📖 图鉴收录新鱼种：' + names.join('、') + '！');
+    }
     result.message = result.success
       ? '收网啦！一共捕到 ' + g.caught.length + ' 条鱼。'
       : '鱼儿今天游得快，一条都没抓住。再来一次就好啦！';
@@ -226,6 +249,8 @@ RS.taskGames.fishing = (function () {
       running: true,
       fishes: [],
       caught: [],
+      bySpecies: {},      // { blue: 2, gold: 1 } 这一局每种鱼捕到几条
+      firstTime: {},      // 这一局里第一次进图鉴的鱼
       points: 0,
       raf: 0,
       spawnTimer: 0,

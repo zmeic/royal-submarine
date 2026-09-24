@@ -213,8 +213,69 @@ RS.icons = (function () {
     /* 舷梯 */
     ladder:
       '<path d="M14 6v36M34 6v36" stroke="' + LINE + '" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="M14 14h20M14 22h20M14 30h20M14 38h20" stroke="' + LINE + '" stroke-width="2.6" stroke-linecap="round"/>'
+      '<path d="M14 14h20M14 22h20M14 30h20M14 38h20" stroke="' + LINE + '" stroke-width="2.6" stroke-linecap="round"/>',
+
+    /* 图鉴：一本摊开的小册子 */
+    book:
+      '<path d="M6 11q9-4 18 2v27q-9-6-18-2z" fill="#fff6e4" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M42 11q-9-4-18 2v27q9-6 18-2z" fill="#ffe8c8" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M24 13v27" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<path d="M10 18q5-2 9 1M10 24q5-2 9 1M29 19q5-3 9-1M29 25q5-3 9-1"' +
+        ' stroke="' + LINE + '" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".6"/>' +
+      '<path d="M24 4l2 4.2 4.2 2-4.2 2-2 4.2-2-4.2-4.2-2 4.2-2z" fill="#ffd45e" stroke="' + LINE + '" stroke-width="1.2"/>',
+
+    /* 成就：奖牌 */
+    medal:
+      '<path d="M15 5l6 14h6L21 5z" fill="#8fd6f5" stroke="' + LINE + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<path d="M33 5l-6 14h-6l6-14z" fill="#ff9aa2" stroke="' + LINE + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<circle cx="24" cy="31" r="12" fill="#ffd45e" stroke="' + LINE + '" stroke-width="2"/>' +
+      '<circle cx="24" cy="31" r="7.5" fill="#fff3c4" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<path d="M24 25.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="#f2a33c"/>',
+
+    /* 还没收集到：一个问号 */
+    unknown:
+      '<circle cx="24" cy="24" r="18" fill="#e8ddcc" stroke="' + LINE + '" stroke-width="2" opacity=".75"/>' +
+      '<path d="M18 19q0-6 6-6t6 5.5q0 4-5 5.5v3" stroke="' + LINE + '" stroke-width="3.2" fill="none"' +
+        ' stroke-linecap="round" opacity=".75"/>' +
+      '<circle cx="24" cy="34" r="2.4" fill="' + LINE + '" opacity=".75"/>'
   };
+
+  /* ------------------------------------------------------------
+   * 鱼的种类：同一个鱼形状，换配色和花纹。
+   * sp 来自 js/config.js 的 RS.config.species。
+   * 想换成孩子画的某一种鱼，在 js/art.js 里写 'fish-<id>': '路径' 即可。
+   * ---------------------------------------------------------- */
+  function speciesPattern(sp) {
+    var mark = sp.mark || '#ffffff';
+    if (sp.pattern === 'stripe') {
+      return '<path d="M20 14.6q-3 9 0 18.6" stroke="' + mark + '" stroke-width="3.4" fill="none" opacity=".85"/>' +
+        '<path d="M27 13.4q-3.4 10 0 21" stroke="' + mark + '" stroke-width="3" fill="none" opacity=".7"/>';
+    }
+    if (sp.pattern === 'spot') {
+      return '<circle cx="24" cy="20" r="2.4" fill="' + mark + '" opacity=".8"/>' +
+        '<circle cx="30" cy="25" r="2" fill="' + mark + '" opacity=".8"/>' +
+        '<circle cx="23" cy="28" r="1.8" fill="' + mark + '" opacity=".8"/>';
+    }
+    if (sp.pattern === 'crown') {
+      return '<path d="M19 12 L18 5.5 l4 2.6 3-4.4 3 4.4 4-2.6 -1 6.5z" fill="#ffd45e"' +
+        ' stroke="' + LINE + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+        '<circle cx="26" cy="21" r="1.6" fill="' + mark + '" opacity=".9"/>' +
+        '<circle cx="31" cy="25" r="1.4" fill="' + mark + '" opacity=".9"/>';
+    }
+    return '';
+  }
+
+  function speciesShape(sp) {
+    return '<path d="M5 24q11-12 23-12 11 0 15 12-4 12-15 12-12 0-23-12z" fill="' + sp.body +
+        '" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M43 24l-9-7v14z" fill="' + sp.fin + '" stroke="' + LINE + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M24 32q5 5 11 3-4 4-11 3z" fill="' + sp.belly + '" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      speciesPattern(sp) +
+      '<circle cx="17" cy="21" r="3" fill="#fff" stroke="' + LINE + '" stroke-width="1.4"/>' +
+      '<circle cx="17.6" cy="21" r="1.4" fill="#2b2b2b"/>' +
+      '<path d="M13 27q4 2 8 1" stroke="' + LINE + '" stroke-width="1.4" fill="none"' +
+        ' stroke-linecap="round" opacity=".5"/>';
+  }
 
   return {
     /** 取得某个图标（优先用 RS.art.images 里配置的图片） */
@@ -227,6 +288,16 @@ RS.icons = (function () {
       var inner = shapes[name];
       if (!inner) { inner = shapes.bubble; }
       return wrap(inner, extraClass, bare);
+    },
+    /** 画某一种鱼（图鉴 / 捕鱼任务用） */
+    species: function (sp, extraClass, bare) {
+      if (!sp) { return wrap(shapes.fish, extraClass, bare); }
+      var img = (window.RS && RS.art && RS.art.imageFor) ? RS.art.imageFor('fish-' + sp.id) : null;
+      if (img && !bare) {
+        return '<img class="icon icon--img ' + (extraClass || '') + '" src="' + img +
+          '" alt="" aria-hidden="true" draggable="false" />';
+      }
+      return wrap(speciesShape(sp), extraClass, bare);
     },
     has: function (name) { return !!shapes[name]; }
   };

@@ -79,6 +79,7 @@ RS.shop = (function () {
       ui.burstFromEl(card, 10);
     }
     ui.toast('买到' + item.name + '啦！', 'good', 1800);
+    RS.achievements.check();   // 可能凑齐了「全副武装」
 
     window.setTimeout(function () {
       render();

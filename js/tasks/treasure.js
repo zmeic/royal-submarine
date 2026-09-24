@@ -95,7 +95,8 @@ RS.taskGames.treasure = (function () {
           success: true,
           points: cfg.points,
           lines: ['🎁 找到宝藏 · +' + cfg.points + ' 分', '一共挖了 ' + (g.used + 1) + ' 次'],
-          message: '宝箱打开了，里面全是金币和珍珠！'
+          message: '宝箱打开了，里面全是金币和珍珠！',
+          collect: { treasure: true }
         };
         stop();
         cb(out);
