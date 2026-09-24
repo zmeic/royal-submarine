@@ -1,0 +1,158 @@
+/* ============================================================
+ * 基础层：颜色变量、排版、海洋背景、图标尺寸
+ * ============================================================ */
+:root {
+  --deep:      #052e4a;
+  --deep-2:    #063b5e;
+  --mid:       #0a6aa0;
+  --sea:       #0e88c4;
+  --shallow:   #7fd8f7;
+  --foam:      #cfefff;
+  --sand:      #f6e2b3;
+  --gold:      #ffc34d;
+  --gold-dark: #e0902f;
+  --coral:     #ff7a6b;
+  --green:     #2fc98a;
+  --purple:    #8c7ae6;
+  --ink:       #0d3149;
+  --ink-soft:  #38637d;
+  --white:     #ffffff;
+
+  --radius:    18px;
+  --radius-lg: 28px;
+  --shadow:    0 10px 26px rgba(4, 38, 63, .22);
+  --shadow-sm: 0 4px 12px rgba(4, 38, 63, .18);
+
+  --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+          system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: linear-gradient(180deg, #0e88c4 0%, #075b8e 45%, #042b46 100%);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 { margin: 0 0 .4em; line-height: 1.25; }
+p { margin: 0 0 .7em; }
+ul { margin: 0; padding: 0; list-style: none; }
+strong { color: var(--gold-dark); }
+
+/* ---------------- 海洋背景 ---------------- */
+.ocean-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ocean-bg__light {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 130%;
+  background:
+    linear-gradient(105deg, rgba(255,255,255,.16) 0 6%, transparent 6.1% 14%),
+    linear-gradient(95deg, rgba(255,255,255,.10) 0 4%, transparent 4.1% 20%),
+    linear-gradient(115deg, rgba(255,255,255,.08) 0 5%, transparent 5.1% 26%);
+  animation: lightSway 14s ease-in-out infinite alternate;
+}
+@keyframes lightSway {
+  from { transform: translateX(-3%) skewX(-2deg); }
+  to   { transform: translateX(3%) skewX(2deg); }
+}
+.ocean-bg__waves {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 90px;
+  background:
+    radial-gradient(60px 26px at 40px 0, rgba(255,255,255,.28), transparent 70%) repeat-x,
+    radial-gradient(70px 30px at 120px 8px, rgba(255,255,255,.18), transparent 70%) repeat-x;
+  background-size: 160px 90px, 240px 90px;
+  animation: waveMove 9s linear infinite;
+  opacity: .8;
+}
+@keyframes waveMove {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 160px 0, -240px 0; }
+}
+.ocean-bg__bubbles { position: absolute; inset: 0; }
+.bubble {
+  position: absolute;
+  bottom: -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.9), rgba(207,239,255,.25) 60%, rgba(207,239,255,0) 70%);
+  border: 1px solid rgba(255,255,255,.35);
+  animation-name: bubbleUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes bubbleUp {
+  0%   { transform: translateY(0) translateX(0) scale(.7); opacity: 0; }
+  10%  { opacity: .85; }
+  50%  { transform: translateY(-50vh) translateX(18px) scale(1); }
+  100% { transform: translateY(-105vh) translateX(-14px) scale(1.1); opacity: 0; }
+}
+
+/* ---------------- 图标尺寸 ---------------- */
+.icon { display: block; width: 100%; height: 100%; }
+.icon--chip   { width: 22px; height: 22px; display: inline-block; vertical-align: -5px; margin-right: 4px; }
+.icon--mini   { width: 42px; height: 42px; }
+.icon--role   { width: 78px; height: 78px; }
+.icon--slot   { width: 62px; height: 62px; }
+.icon--room   { width: 44px; height: 44px; }
+.icon--scene  { width: 62px; height: 62px; }
+.icon--scene-lg { width: 96px; height: 96px; }
+.icon--shop   { width: 76px; height: 76px; }
+.icon--task   { width: 86px; height: 86px; }
+.icon--tool   { width: 58px; height: 58px; }
+.icon--zone   { width: 54px; height: 54px; }
+.icon--fish   { width: 100%; height: auto; }
+.icon--hero   { width: 190px; height: 190px; }
+.icon--result { width: 96px; height: 96px; }
+
+/* ---------------- 特效层：飘字 ---------------- */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+.float-text {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--white);
+  text-shadow: 0 2px 0 #0a5f8f, 0 6px 14px rgba(0,0,0,.35);
+  animation: floatUp 1.05s ease-out forwards;
+  white-space: nowrap;
+}
+.float-text--rare  { color: #fff0b8; font-size: 36px; }
+.float-text--bonus { color: #d6ffe9; }
+.float-text--cost  { color: #ffd7d2; }
+@keyframes floatUp {
+  0%   { transform: translate(-50%, -50%) scale(.6); opacity: 0; }
+  25%  { transform: translate(-50%, -80%) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -190%) scale(1); opacity: 0; }
+}
+
+/* 尊重“减少动画”偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001s !important;
+  }
+}

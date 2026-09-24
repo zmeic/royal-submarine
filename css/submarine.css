@@ -1,0 +1,291 @@
+/* ============================================================
+ * 潜艇平面图与房间面板
+ * ============================================================ */
+
+.sub-map {
+  background: radial-gradient(120% 90% at 50% 20%, #23a3d8, #075b8e);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  border: 4px solid #cfeaf8;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, .25);
+}
+.sub-svg { display: block; width: 100%; height: auto; }
+
+.sub-name {
+  font-size: 22px;
+  font-weight: 800;
+  fill: #cfefff;
+  letter-spacing: 2px;
+  font-family: var(--font);
+}
+.sub-window {
+  fill: #7fd8f7;
+  stroke: #fff;
+  stroke-width: 3;
+}
+.sub-light { animation: subLight 2.6s ease-in-out infinite; }
+@keyframes subLight {
+  0%, 100% { opacity: .55; r: 13; }
+  50%      { opacity: 1; r: 16; }
+}
+.sub-propeller { transform-box: fill-box; transform-origin: center; animation: spin 3s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------- 房间（可点击） ---------------- */
+.room { cursor: pointer; }
+/* 内嵌图标按 x/y/width/height 属性定位，不要被 .icon 的 width:100% 影响 */
+.map-icon, .room__label { pointer-events: none; }
+.room__rect {
+  stroke: #ffffff;
+  stroke-width: 4;
+  transition: filter .15s ease;
+}
+.room__label {
+  font-family: var(--font);
+  font-size: 20px;
+  font-weight: 800;
+  fill: #0d3149;
+}
+.room:hover .room__rect,
+.room:focus .room__rect {
+  filter: brightness(1.08) drop-shadow(0 0 10px rgba(255, 255, 255, .9));
+}
+.room:focus { outline: none; }
+.room:focus-visible .room__rect { stroke: #ffc34d; stroke-width: 7; }
+.room.is-open .room__rect {
+  stroke: #ffc34d;
+  stroke-width: 7;
+  filter: brightness(1.1);
+}
+
+/* ---------------- 房间面板 ---------------- */
+.room-panel { margin-top: 18px; }
+.room-panel.is-pop .room-card { animation: popIn .28s ease; }
+.room-card {
+  background: linear-gradient(180deg, #f7fdff, #e9f6fd);
+  border: 4px solid #cfeaf8;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  text-align: center;
+}
+.room-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.room-card__icon {
+  background: #fff;
+  border-radius: 50%;
+  padding: 6px;
+  box-shadow: var(--shadow-sm);
+  display: block;
+}
+.room-card__title { font-size: 26px; color: var(--deep); margin: 0; }
+.room-card__desc { color: var(--ink-soft); max-width: 620px; margin: 6px auto 14px; }
+.room-card__body > .btn { display: block; margin: 8px auto 0; }
+.room-card__body .row .btn { display: inline-block; margin-top: 0; }
+.room__note { color: var(--ink-soft); font-size: 16px; }
+
+/* 房间小场景的公共盒子 */
+.room-scene {
+  position: relative;
+  height: 170px;
+  border-radius: var(--radius);
+  margin: 0 auto 14px;
+  max-width: 560px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #bfe9ff, #7fd0f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+/* 驾驶区 */
+.room-scene--bridge { background: linear-gradient(180deg, #d8ecff, #a9d3f0); }
+.radar {
+  position: relative;
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0b3d2e 0 55%, #0a5540 100%);
+  border: 5px solid #d9912c;
+  overflow: hidden;
+}
+.radar__sweep {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, rgba(120, 255, 190, .75), transparent 40%);
+  animation: spin 2.6s linear infinite;
+}
+.radar__dot {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #7dffc0;
+  top: 32%; left: 62%;
+  animation: blink 1.6s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.wheel-spin { width: 92px; height: 92px; animation: wheelTilt 5s ease-in-out infinite; }
+@keyframes wheelTilt {
+  0%, 100% { transform: rotate(-16deg); }
+  50%      { transform: rotate(16deg); }
+}
+.dist-list {
+  display: inline-block;
+  text-align: left;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  margin-bottom: 12px;
+}
+.dist-list li { margin: 4px 0; }
+
+/* 观景区 */
+.room-scene--view { background: linear-gradient(180deg, #58b8e0, #0b6a9c); }
+.portholes { display: flex; gap: 16px; z-index: 2; }
+.porthole {
+  width: 112px; height: 112px;
+  border-radius: 12px;                /* 方形窗户 */
+  background: linear-gradient(180deg, #9ee4ff, #2b93c9);
+  border: 7px solid #f2f6f9;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, .25);
+  overflow: hidden;
+  position: relative;
+}
+.porthole__fish { position: absolute; top: 24px; left: -50px; display: block; }
+.porthole__fish--a { animation: swimAcross 6s linear infinite; }
+.porthole__fish--b { animation: swimAcross 8s linear infinite 1.2s; }
+.porthole__fish--c { animation: swimAcross 10s linear infinite .6s; }
+@keyframes swimAcross {
+  from { transform: translateX(0); }
+  to   { transform: translateX(170px); }
+}
+.reef { position: absolute; bottom: 0; left: 0; right: 0; height: 40px; display: flex; gap: 22px; justify-content: center; }
+.reef__coral {
+  width: 26px;
+  align-self: flex-end;
+  height: 34px;
+  background: #ff9aa2;
+  border-radius: 14px 14px 0 0;
+}
+.reef__coral:nth-child(2) { background: #ffd166; height: 24px; }
+.reef__coral:nth-child(3) { background: #8ce0c0; height: 40px; }
+.reef__coral:nth-child(4) { background: #c8a7ff; height: 28px; }
+
+/* 餐厅 */
+.room-scene--dining { background: linear-gradient(180deg, #ffe9c9, #ffd1a1); }
+.dining-table { position: relative; width: 320px; height: 130px; }
+.dining-table__top {
+  position: absolute;
+  bottom: 44px; left: 0; right: 0;
+  height: 16px;
+  background: #d79a4e;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+.dining-table__legs { position: absolute; bottom: 0; left: 0; right: 0; height: 46px; }
+.dining-table__legs span {
+  position: absolute;
+  width: 12px; height: 46px;
+  background: #b07a3c;
+  border-radius: 4px;
+}
+.dining-table__legs span:first-child { left: 34px; }
+.dining-table__legs span:last-child  { right: 34px; }
+.dish {
+  position: absolute;
+  bottom: 60px;
+  width: 62px; height: 62px;
+  animation: dishBob 2.6s ease-in-out infinite;
+}
+.dish:nth-child(1) { left: 24px; }
+.dish:nth-child(2) { left: 130px; animation-delay: .4s; }
+.dish:nth-child(3) { left: 236px; animation-delay: .8s; }
+@keyframes dishBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* 储藏区 */
+.room-scene--storage { background: linear-gradient(180deg, #e8dfff, #c6b7f5); }
+.crate { width: 74px; height: 74px; display: block; animation: dishBob 3s ease-in-out infinite; }
+.crate:nth-child(2) { animation-delay: .5s; }
+.crate:nth-child(3) { animation-delay: 1s; }
+.gear-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.gear-list li {
+  background: #fff;
+  border: 2px solid #d9e9f2;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-weight: 700;
+}
+
+/* 厕所 */
+.room-scene--toilet { background: linear-gradient(180deg, #e6f7ff, #bfe6f7); }
+.room-scene--toilet .icon { width: 96px; height: 96px; }
+.sink-bubbles { position: absolute; bottom: 24px; left: 50%; width: 60px; height: 60px; }
+.sink-bubbles span {
+  position: absolute;
+  bottom: 0;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  opacity: 0;
+}
+.room-scene--toilet.is-washing .sink-bubbles span { animation: washUp 1.1s ease-out 1; }
+.sink-bubbles span:nth-child(1) { left: 0; }
+.sink-bubbles span:nth-child(2) { left: 22px; animation-delay: .15s !important; }
+.sink-bubbles span:nth-child(3) { left: 44px; animation-delay: .3s !important; }
+@keyframes washUp {
+  0%   { transform: translateY(0) scale(.6); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { transform: translateY(-70px) scale(1.2); opacity: 0; }
+}
+
+/* 舞台 */
+.room-scene--stage {
+  background: linear-gradient(180deg, #3b2a5c, #6a4b8f);
+  overflow: hidden;
+}
+.spot {
+  position: absolute;
+  top: -30px;
+  width: 0; height: 0;
+  border-left: 60px solid transparent;
+  border-right: 60px solid transparent;
+  border-bottom: 190px solid rgba(255, 233, 168, .35);
+  filter: blur(2px);
+}
+.spot--l { left: 12%; animation: spotSwing 3.4s ease-in-out infinite; }
+.spot--r { right: 12%; border-bottom-color: rgba(255, 209, 240, .35); animation: spotSwing 3.4s ease-in-out infinite reverse; }
+@keyframes spotSwing {
+  0%, 100% { transform: rotate(-12deg); }
+  50%      { transform: rotate(12deg); }
+}
+.room-scene--stage.is-on .spot { filter: blur(1px) brightness(1.4); }
+.stage-floor {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 34px;
+  background: linear-gradient(180deg, #d79a4e, #a86f2c);
+}
+.performer { position: relative; z-index: 2; display: block; width: 96px; height: 96px; }
+.performer.is-singing { animation: sing .6s ease-in-out 5; }
+.performer.is-dancing { animation: dance .5s ease-in-out 6; }
+@keyframes sing {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-10px) scale(1.08); }
+}
+@keyframes dance {
+  0%   { transform: rotate(-12deg) translateX(-10px); }
+  50%  { transform: rotate(12deg) translateX(10px); }
+  100% { transform: rotate(-12deg) translateX(-10px); }
+}

@@ -1,0 +1,11 @@
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# 第一版没有构建步骤，这些只是以后备用
+node_modules/
+dist/
+*.log

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>皇家潜艇 · 海底探险小游戏</title>
+<meta name="description" content="《皇家潜艇》儿童网页小游戏第一版原型：抽身份、开潜艇、捕鱼寻宝救援、赚积分换装备。" />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/screens.css" />
+<link rel="stylesheet" href="css/submarine.css" />
+<link rel="stylesheet" href="css/tasks.css" />
+</head>
+<body>
+
+<!-- 背景：海水、光柱、气泡 -->
+<div class="ocean-bg" aria-hidden="true">
+  <div class="ocean-bg__light"></div>
+  <div class="ocean-bg__waves"></div>
+  <div class="ocean-bg__bubbles" id="bgBubbles"></div>
+</div>
+
+<!-- 顶部信息栏（开场三步隐藏） -->
+<header class="hud" id="hud" hidden>
+  <div class="hud__brand">
+    <span class="hud__logo" id="hudLogo" aria-hidden="true"></span>
+    <span class="hud__title">皇家潜艇</span>
+  </div>
+  <div class="hud__stats">
+    <div class="stat" title="玩家姓名">
+      <span class="stat__label">船上的我</span>
+      <span class="stat__value" id="hudName">—</span>
+    </div>
+    <div class="stat" title="当前身份">
+      <span class="stat__label">身份</span>
+      <span class="stat__value" id="hudRole">—</span>
+    </div>
+    <div class="stat stat--score" title="当前积分">
+      <span class="stat__label">积分</span>
+      <span class="stat__value" id="hudScore">0</span>
+    </div>
+    <div class="stat" title="已完成任务数量">
+      <span class="stat__label">完成任务</span>
+      <span class="stat__value" id="hudTasks">0</span>
+    </div>
+    <div class="stat stat--gear" title="当前装备">
+      <span class="stat__label">装备</span>
+      <span class="stat__value stat__value--gear" id="hudGear">空空的</span>
+    </div>
+  </div>
+  <div class="hud__actions">
+    <button class="btn btn--ghost btn--sm" type="button" id="btnHudShop">🛒 便利店</button>
+    <button class="btn btn--ghost btn--sm" type="button" id="btnHudRestart">重新开始</button>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+
+  <!-- 1. 开始 -->
+  <section class="screen screen--start is-active" id="screen-start" aria-labelledby="startTitle">
+    <div class="panel panel--hero">
+      <div class="hero__art" id="heroArt" aria-hidden="true"></div>
+      <h1 class="hero__title" id="startTitle">皇家潜艇</h1>
+      <p class="hero__sub">欢迎登艇！我们要开着皇家潜艇去海底<strong>捕鱼</strong>、<strong>寻宝</strong>、<strong>救助海洋动物</strong>，
+        赚到积分就能去便利店换装备，然后继续出发探险。</p>
+      <div class="hero__btns">
+        <button class="btn btn--primary btn--xl" type="button" id="btnContinue" hidden>继续上次探险</button>
+        <button class="btn btn--primary btn--xl" type="button" id="btnNewGame">开始新游戏</button>
+      </div>
+      <p class="hero__tip" id="startSaveTip" hidden></p>
+    </div>
+  </section>
+
+  <!-- 2. 抽身份 -->
+  <section class="screen screen--role" id="screen-role" aria-labelledby="roleTitle">
+    <div class="panel">
+      <h2 class="panel__title" id="roleTitle">抽取你的身份</h2>
+      <p class="panel__hint">潜艇上有三种工作，抽签决定你这次当谁！</p>
+      <div class="role-slots" id="roleSlots"></div>
+      <div class="role-result" id="roleResult" hidden></div>
+      <div class="row row--center">
+        <button class="btn btn--primary btn--xl" type="button" id="btnDrawRole">🎲 开始抽签</button>
+        <button class="btn btn--ghost btn--lg" type="button" id="btnRedraw" hidden>再抽一次</button>
+        <button class="btn btn--primary btn--xl" type="button" id="btnRoleNext" hidden>就当这个 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 起名字 -->
+  <section class="screen screen--name" id="screen-name" aria-labelledby="nameTitle">
+    <div class="panel">
+      <h2 class="panel__title" id="nameTitle">给自己起个名字</h2>
+      <div class="role-holder" id="nameRoleCard"></div>
+      <label class="field">
+        <span class="field__label">我的名字（最多 8 个字）</span>
+        <input class="field__input" type="text" id="inputName" maxlength="8" placeholder="例如：小海豚" autocomplete="off" />
+      </label>
+      <p class="field__error" id="nameError" role="alert" hidden>请先写一个名字，或者点“随机起名”。</p>
+      <div class="row row--center">
+        <button class="btn btn--ghost btn--lg" type="button" id="btnRandomName">🎠 随机起名</button>
+        <button class="btn btn--primary btn--xl" type="button" id="btnNameNext">登上潜艇 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 潜艇主界面 -->
+  <section class="screen screen--main" id="screen-main" aria-labelledby="mainTitle">
+    <div class="panel panel--wide">
+      <div class="main__head">
+        <h2 class="panel__title" id="mainTitle">皇家潜艇 · 内部地图</h2>
+        <p class="panel__hint">点一下潜艇里的房间，看看里面有什么。</p>
+      </div>
+      <div class="sub-map" id="subMap"></div>
+      <div class="room-panel" id="roomPanel" aria-live="polite"></div>
+      <div class="main__entries">
+        <button class="btn btn--primary btn--xl btn--wide" type="button" id="btnGoTasks">🐟 出发做任务</button>
+        <button class="btn btn--gold btn--xl btn--wide" type="button" id="btnGoShop">🛒 进入便利店</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 选任务 -->
+  <section class="screen screen--tasks" id="screen-taskselect" aria-labelledby="taskSelTitle">
+    <div class="panel panel--wide">
+      <h2 class="panel__title" id="taskSelTitle">选择任务地点</h2>
+      <p class="panel__hint" id="taskSelHint"></p>
+      <div class="task-cards" id="taskCards"></div>
+      <div class="row row--center">
+        <button class="btn btn--ghost btn--lg" type="button" data-goto="screen-main">← 回到潜艇</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 任务小游戏 -->
+  <section class="screen screen--play" id="screen-task" aria-labelledby="taskPlayTitle">
+    <div class="panel panel--wide">
+      <div class="play__head">
+        <h2 class="panel__title" id="taskPlayTitle">任务进行中</h2>
+        <button class="btn btn--ghost btn--sm" type="button" id="btnAbortTask">放弃任务</button>
+      </div>
+      <div class="play__area" id="taskArea"></div>
+    </div>
+  </section>
+
+  <!-- 7. 结算 -->
+  <section class="screen screen--result" id="screen-result" aria-labelledby="resultTitle">
+    <div class="panel panel--result">
+      <div class="result__art" id="resultArt" aria-hidden="true"></div>
+      <h2 class="panel__title" id="resultTitle">任务结果</h2>
+      <p class="result__msg" id="resultMsg"></p>
+      <ul class="result__lines" id="resultLines"></ul>
+      <div class="result__score" id="resultScore"></div>
+      <div class="row row--center">
+        <button class="btn btn--primary btn--xl" type="button" id="btnResultAgain">再做一个任务</button>
+        <button class="btn btn--gold btn--lg" type="button" id="btnResultShop">去便利店</button>
+        <button class="btn btn--ghost btn--lg" type="button" data-goto="screen-main">回到潜艇</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 便利店 -->
+  <section class="screen screen--shop" id="screen-shop" aria-labelledby="shopTitle">
+    <div class="panel panel--wide">
+      <h2 class="panel__title" id="shopTitle">潜艇便利店</h2>
+      <div class="shop__bar">
+        <div class="shop__score">我的积分：<strong id="shopScore">0</strong> 分</div>
+        <div class="shop__own">我的装备：<span id="shopOwn">空空的</span></div>
+      </div>
+      <div class="shop__grid" id="shopGrid"></div>
+      <p class="shop__note">提示：鱼钩和鱼枪用久了会坏掉，坏了再来换一个就好，不会扣分。</p>
+      <div class="row row--center">
+        <button class="btn btn--ghost btn--lg" type="button" data-goto="screen-main">← 回到潜艇</button>
+        <button class="btn btn--primary btn--lg" type="button" id="btnShopToTasks">继续做任务 →</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 浮动提示 -->
+<div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="false"></div>
+
+<!-- 二次确认弹窗 -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText">
+    <h3 class="modal__title" id="modalTitle">确定吗？</h3>
+    <p class="modal__text" id="modalText"></p>
+    <div class="row row--center">
+      <button class="btn btn--danger btn--lg" type="button" id="modalOk">确定</button>
+      <button class="btn btn--ghost btn--lg" type="button" id="modalCancel">先不要</button>
+    </div>
+  </div>
+</div>
+
+<div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/submarine.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/tasks/fishing.js"></script>
+<script src="js/tasks/treasure.js"></script>
+<script src="js/tasks/rescue.js"></script>
+<script src="js/tasks/index.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
